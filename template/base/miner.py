@@ -23,10 +23,12 @@ import argparse
 import traceback
 
 import bittensor as bt
-
+from scraping.twitter.twitter_scraper import TwitterScraper
 from template.base.neuron import BaseNeuron
 from template.utils.config import add_miner_args
-
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 class BaseMinerNeuron(BaseNeuron):
     """
@@ -69,6 +71,8 @@ class BaseMinerNeuron(BaseNeuron):
         self.should_exit: bool = False
         self.is_running: bool = False
         self.thread: threading.Thread = None
+        self.is_scraping_running:bool = False
+        self.scraping_thread: threading.Thread = None
         self.lock = asyncio.Lock()
 
     def run(self):
@@ -111,14 +115,21 @@ class BaseMinerNeuron(BaseNeuron):
 
         # This loop maintains the miner's operations until intentionally stopped.
         try:
+            start_block = self.block
+                    
             while not self.should_exit:
+                bt.logging.info(f"🤨{self.block}")
+                if(self.block - start_block > self.config.num_blocks_for_commit):
+                    self.stop_scrape_run_thread()
+                    time.sleep(10)
+                    self.run_scraper_thread()
+                    start_block = self.block
                 while (
                     self.block - self.metagraph.last_update[self.uid]
                     < self.config.neuron.epoch_length
                 ):
                     # Wait before checking again.
                     time.sleep(1)
-
                     # Check if we should exit.
                     if self.should_exit:
                         break
@@ -137,6 +148,14 @@ class BaseMinerNeuron(BaseNeuron):
         except Exception as e:
             bt.logging.error(traceback.format_exc())
 
+    
+    def run_scrape(self):
+        twitter_scraper = TwitterScraper(self.config.db_directory, os.getenv("APIFY_KEY"))
+        while not self.scraper_should_exit:
+            twitter_scraper.scrape(["bittensor"])
+            twitter_scraper.save()
+            # Sleep for 1 minute.
+            time.sleep(self.config.scrape_interval)
     def run_in_background_thread(self):
         """
         Starts the miner's operations in a separate background thread.
@@ -149,7 +168,24 @@ class BaseMinerNeuron(BaseNeuron):
             self.thread.start()
             self.is_running = True
             bt.logging.debug("Started")
-
+    def run_scraper_thread(self):
+        if not self.is_scraping_running:
+            bt.logging.debug("🥵 Starting scraper in background thread.")
+            self.scraper_should_exit = False
+            self.scraping_thread = threading.Thread(target=self.run_scrape, daemon=True)
+            self.scraping_thread.start()
+            self.is_scraping_running = True
+            bt.logging.debug("Scraper Started")
+    def stop_scrape_run_thread(self):
+        """
+        Stops the miner's operations that are running in the background thread.
+        """
+        if self.is_scraping_running:
+            bt.logging.debug("⏹️ Stopping scraper in background thread.")
+            self.scraper_should_exit = True
+            self.scraping_thread.join(5)
+            self.is_scraping_running = False
+            bt.logging.debug("Scraper Stopped")
     def stop_run_thread(self):
         """
         Stops the miner's operations that are running in the background thread.
@@ -167,6 +203,7 @@ class BaseMinerNeuron(BaseNeuron):
         This method facilitates the use of the miner in a 'with' statement.
         """
         self.run_in_background_thread()
+        self.run_scraper_thread()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -183,6 +220,7 @@ class BaseMinerNeuron(BaseNeuron):
                        None if the context was exited without an exception.
         """
         self.stop_run_thread()
+        self.stop_scrape_run_thread()
 
     def resync_metagraph(self):
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""

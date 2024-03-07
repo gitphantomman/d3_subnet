@@ -150,8 +150,8 @@ class Miner(BaseMinerNeuron):
             f"Prioritizing {synapse.dendrite.hotkey} with value: ", prirority
         )
         return prirority
-
-
+    
+    
 # This is the main function, which runs the miner.
 if __name__ == "__main__":
     with Miner() as miner:
