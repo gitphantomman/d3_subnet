@@ -157,7 +157,27 @@ def add_miner_args(cls, parser):
         default="opentensor-dev",
         help="Wandb entity to log to.",
     )
+    # interval in seconds to scrape data
+    parser.add_argument(
+        "--scrape_interval",
+        type=int,
+        default=60,
+        help="Interval in seconds to scrape data.",
+    )
+    # Directory to store scraped data locally for miners
+    parser.add_argument(
+        "--db_directory",
+        type=str,
+        default='data/',
+        help="Directory to store scraped data locally for miners.",
+    )
 
+    parser.add_argument(
+        "--num_blocks_for_commit",
+        type=int,
+        default=100,
+        help="Number of blocks to wait before committing the scraped data to the database.",
+    )
 
 def add_validator_args(cls, parser):
     """Add validator specific arguments to the parser."""
