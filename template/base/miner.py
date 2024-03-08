@@ -21,13 +21,15 @@ import asyncio
 import threading
 import argparse
 import traceback
-
+import functools
 import bittensor as bt
 from scraping.twitter.twitter_scraper import TwitterScraper
 from template.base.neuron import BaseNeuron
 from template.utils.config import add_miner_args
 import os
+from template.utils.huggingface import create_hf_dataset_from_sqlite
 from dotenv import load_dotenv
+from template.utils import utilities
 load_dotenv()
 
 class BaseMinerNeuron(BaseNeuron):
@@ -116,13 +118,34 @@ class BaseMinerNeuron(BaseNeuron):
         # This loop maintains the miner's operations until intentionally stopped.
         try:
             start_block = self.block
-                    
+            # print("return latest commit", self.subtensor.get_commitment(self.config.netuid, uid = 18))
+            # partial = functools.partial(bt.extrinsics.serving.get_metadata, self.subtensor, self.config.netuid, '5HC5euUxTxAReGHw8hn5L7niT1QVeTsPZXK3UQjVCCkqUGFV')
+            # metadata = utilities.run_in_subprocess(partial, 60)
+            # print(metadata)
             while not self.should_exit:
                 bt.logging.info(f"🤨{self.block}")
                 if(self.block - start_block > self.config.num_blocks_for_commit):
-                    self.stop_scrape_run_thread()
-                    time.sleep(10)
-                    self.run_scraper_thread()
+                    try:
+
+                        self.stop_scrape_run_thread()
+                        # make filename with timestamp
+                        filename = "twitter_dataset_" + str(int(time.time()))
+                        upload_url = create_hf_dataset_from_sqlite(self.config.db_directory+"twitter_data.db", "tweets", filename , "Dataset of tweets scraped from Twitter.")
+
+                        bt.logging.success(f"⬆️ uploading dataset to huggingface : {upload_url}")
+
+                        # commit upload_url to subtensor chain
+                        self.subtensor.commit(self.wallet, self.config.netuid, upload_url)
+                        bt.logging.success(f"📝 committed dataset to subtensor chain")
+                        # remove db file
+                        os.remove(self.config.db_directory+"twitter_data.db")
+                        bt.logging.info(f"🚮 removed db file")
+                        time.sleep(10)
+                        self.run_scraper_thread()
+                    except BaseException as e:
+                        bt.logging.error(f"Error while committing to subtensor chain: {e}")
+                        self.run_scraper_thread()
+                        bt.logging.info(f"🔄 restarting scraper")
                     start_block = self.block
                 while (
                     self.block - self.metagraph.last_update[self.uid]
@@ -152,9 +175,12 @@ class BaseMinerNeuron(BaseNeuron):
     def run_scrape(self):
         twitter_scraper = TwitterScraper(self.config.db_directory, os.getenv("APIFY_KEY"))
         while not self.scraper_should_exit:
-            twitter_scraper.scrape(["bittensor"])
-            twitter_scraper.save()
-            # Sleep for 1 minute.
+            try:
+                twitter_scraper.scrape(["bittensor"])
+                twitter_scraper.save()
+            except Exception as e:
+                bt.logging.error(f"Error while scraping: {e}")
+                # Sleep for 1 minute.
             time.sleep(self.config.scrape_interval)
     def run_in_background_thread(self):
         """

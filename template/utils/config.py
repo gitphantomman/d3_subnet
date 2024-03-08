@@ -161,7 +161,7 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--scrape_interval",
         type=int,
-        default=60,
+        default=60, 
         help="Interval in seconds to scrape data.",
     )
     # Directory to store scraped data locally for miners
