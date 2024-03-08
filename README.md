@@ -49,7 +49,7 @@ python neurons/miner.py --subtensor.network test --netuid 18 --wallet.name test_
 
 - Extended Running CLI
     ```bash
-    python neurons/miner.py --subtensor.network test --netuid 18 --wallet.name test_miner1 --wallet.hotkey default --axon.port 8091 --logging.debug --num_blocks_for_commit 7 --scrape_interval 5
+    python neurons/miner.py --subtensor.network test --netuid 18 --wallet.name test_miner1 --wallet.hotkey default --axon.port 8091 --logging.debug --num_blocks_for_commit 7 --scrape_interval 5 --db_directory data/
     ```
 
 ## Running validator
