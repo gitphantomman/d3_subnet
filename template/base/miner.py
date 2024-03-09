@@ -130,13 +130,13 @@ class BaseMinerNeuron(BaseNeuron):
                         self.stop_scrape_run_thread()
                         # make filename with timestamp
                         filename = "twitter_dataset_" + str(int(time.time()))
-                        upload_url = create_hf_dataset_from_sqlite(self.config.db_directory+"twitter_data.db", "tweets", filename , "Dataset of tweets scraped from Twitter.")
+                        upload_url = create_hf_dataset_from_sqlite(self.subtensor, self.wallet, self.config.netuid, self.config.db_directory+"twitter_data.db", "tweets", filename , "Dataset of tweets scraped from Twitter.")
 
                         bt.logging.success(f"⬆️ uploading dataset to huggingface : {upload_url}")
 
                         # commit upload_url to subtensor chain
-                        self.subtensor.commit(self.wallet, self.config.netuid, upload_url)
-                        bt.logging.success(f"📝 committed dataset to subtensor chain")
+                        # self.subtensor.commit(self.wallet, self.config.netuid, upload_url)
+                        # bt.logging.success(f"📝 committed dataset to subtensor chain")
                         # remove db file
                         os.remove(self.config.db_directory+"twitter_data.db")
                         bt.logging.info(f"🚮 removed db file")
