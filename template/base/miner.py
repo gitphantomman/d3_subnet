@@ -118,10 +118,7 @@ class BaseMinerNeuron(BaseNeuron):
         # This loop maintains the miner's operations until intentionally stopped.
         try:
             start_block = self.block
-            # print("return latest commit", self.subtensor.get_commitment(self.config.netuid, uid = 18))
-            # partial = functools.partial(bt.extrinsics.serving.get_metadata, self.subtensor, self.config.netuid, '5HC5euUxTxAReGHw8hn5L7niT1QVeTsPZXK3UQjVCCkqUGFV')
-            # metadata = utilities.run_in_subprocess(partial, 60)
-            # print(metadata)
+
             while not self.should_exit:
                 bt.logging.info(f"🤨{self.block}")
                 if(self.block - start_block > self.config.num_blocks_for_commit):
@@ -134,18 +131,18 @@ class BaseMinerNeuron(BaseNeuron):
 
                         bt.logging.success(f"⬆️ uploading dataset to huggingface : {upload_url}")
 
-                        # commit upload_url to subtensor chain
-                        # self.subtensor.commit(self.wallet, self.config.netuid, upload_url)
-                        # bt.logging.success(f"📝 committed dataset to subtensor chain")
-                        # remove db file
-                        os.remove(self.config.db_directory+"twitter_data.db")
-                        bt.logging.info(f"🚮 removed db file")
+                        #commit upload_url to subtensor chain
+                        # TODO: make async
+                        self.subtensor.commit(self.wallet, self.config.netuid, upload_url)
+                        bt.logging.success(f"📝 committed dataset to subtensor chain")
                         time.sleep(10)
-                        self.run_scraper_thread()
                     except BaseException as e:
                         bt.logging.error(f"Error while committing to subtensor chain: {e}")
-                        self.run_scraper_thread()
-                        bt.logging.info(f"🔄 restarting scraper")
+                    #remove db file
+                    os.remove(self.config.db_directory+"twitter_data.db")
+                    bt.logging.info(f"🚮 removed db file")
+                    self.run_scraper_thread()
+                    bt.logging.info(f"🔄 restarting scraper")
                     start_block = self.block
                 while (
                     self.block - self.metagraph.last_update[self.uid]
