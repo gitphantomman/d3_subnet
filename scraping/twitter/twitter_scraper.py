@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 import asyncio
 import sqlite3
+from datetime import datetime
 load_dotenv()
 class TwitterScraper(BaseScraper):
     def __init__(self, save_path, apify_key):
@@ -68,7 +69,7 @@ class TwitterScraper(BaseScraper):
 
         # Create table if it doesn't exist
         c.execute('''CREATE TABLE IF NOT EXISTS tweets
-                     (id TEXT PRIMARY KEY, tweet_content TEXT, user_name TEXT, user_id TEXT, created_at TIMESTAMP, url TEXT, favourite_count INT)''')
+                     (id TEXT PRIMARY KEY, tweet_content TEXT, user_name TEXT, user_id TEXT, created_at TIMESTAMP, url TEXT, favourite_count INT, scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, image_urls TEXT)''')
 
         # Insert fetched items into the database
         for item in self.fetched_items:
@@ -80,9 +81,15 @@ class TwitterScraper(BaseScraper):
             created_at = str(item.get('created_at', 'N/A'))
             url = str(item.get('url', 'N/A'))  # Converting user info to string for simplicity
             favourite_count = item.get('favorite_count', 'N/A')
+            scraped_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Get current time for scraped_at
+            image_urls = item.get('entities', 'N/A').get('media', 'N/A')
+            if image_urls != 'N/A':
+                image_urls = [media['media_url_https'] for media in image_urls if media['type'] == 'photo']
+            else:
+                image_urls = 'N/A'
             # Inserting or ignoring on conflict to avoid duplicates
-            c.execute("INSERT OR IGNORE INTO tweets (id, tweet_content, user_name, user_id, created_at, url, favourite_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                      (tweet_id, tweet_content, user_name, user_id, created_at, url, favourite_count))
+            c.execute("INSERT OR IGNORE INTO tweets (id, tweet_content, user_name, user_id, created_at, url, favourite_count, scraped_at, image_urls) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                      (tweet_id, tweet_content, user_name, user_id, created_at, url, favourite_count, scraped_at, str(image_urls)))
 
         # Commit the changes and close the connection
         self.conn.commit()
