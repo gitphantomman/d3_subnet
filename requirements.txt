@@ -1,2 +1,8 @@
 bittensor
 torch
+huggingface_hub
+redis
+apify_client
+python-dotenv
+pandas
+datasets
