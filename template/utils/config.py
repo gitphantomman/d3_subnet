@@ -255,6 +255,13 @@ def add_validator_args(cls, parser):
         default="opentensor-dev",
     )
 
+    parser.add_argument(
+        "--num_blocks_for_validation",
+        type=int,
+        default=100,
+        help="Number of blocks to wait before next validation.",
+    )
+
 
 def config(cls):
     """

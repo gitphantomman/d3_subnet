@@ -174,6 +174,7 @@ class BaseMinerNeuron(BaseNeuron):
         while not self.scraper_should_exit:
             try:
                 twitter_scraper.scrape(["bittensor"])
+                bt.logging.info(f"🔥 Scraped tweets")
                 twitter_scraper.save()
             except Exception as e:
                 bt.logging.error(f"Error while scraping: {e}")
