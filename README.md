@@ -58,6 +58,12 @@ python neurons/miner.py --subtensor.network test --netuid 18 --wallet.name test_
 python neurons/validator.py --subtensor.network test --netuid 18 --wallet.name test_validator --wallet.hotkey default --axon.port 8092 --logging.debug
 ```
 
+- Extened Running CLI
+
+    ```bash
+    python neurons/validator.py --subtensor.network test --netuid 18 --wallet.name test_validator --wallet.hotkey h1 --axon.port 8092 --logging.debug --num_blocks_for_validation 3
+    ```
+
 
 ## License
 This repository is licensed under the MIT License.

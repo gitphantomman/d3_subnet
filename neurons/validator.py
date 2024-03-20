@@ -23,7 +23,8 @@ import bittensor as bt
 from datasets import load_dataset
 import indexing
 
-
+import os
+from dotenv import load_dotenv
 # Bittensor Validator Template:
 import template
 from template.validator import forward
@@ -31,7 +32,7 @@ from template.validator import forward
 # import base validator class which takes care of most of the boilerplate
 from template.base.validator import BaseValidatorNeuron
 
-
+load_dotenv()
 class Validator(BaseValidatorNeuron):
     """
     Your validator neuron class. You should use this class to define your validator's behavior. In particular, you should replace the forward function with your own logic.
@@ -65,16 +66,23 @@ class Validator(BaseValidatorNeuron):
         """
         Sync the indexing table from the owner.
         """
-
-        dataset = load_dataset("bittensor-dataset/twitter-text-dataset")
+        repo_id = os.getenv("MAIN_REPO_ID")
+        dataset = load_dataset(repo_id)
         indexed_cnt = 0
+        # Index the dataset
         for row in dataset['train']:
-            if indexing.get(row['id']):
+            try:
+                # Skip if already indexed
+                if indexing.get(row['id']):
+                    continue
+                # Index the row
+                else:
+                    indexed_cnt += 1
+                    indexing.save(row['id'], 1)
+            except e:
                 continue
-            else:
-                indexed_cnt += 1
-                indexing.save(row['id'], 1)
         bt.logging.info(f"Indexed {indexed_cnt} rows among {len(dataset['train'])} rows")
+        bt.logging.success(f"Indexing finished")
 # The main function parses the configuration and runs the validator.
 if __name__ == "__main__":
     with Validator() as validator:
