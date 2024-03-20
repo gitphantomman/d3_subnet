@@ -6,6 +6,7 @@ import os
 import asyncio
 import sqlite3
 from datetime import datetime
+import asyncio
 load_dotenv()
 class TwitterScraper(BaseScraper):
     def __init__(self, save_path, apify_key):
@@ -47,6 +48,33 @@ class TwitterScraper(BaseScraper):
         for item in items:
             self.fetched_items.append(item)
         return self.fetched_items
+
+    
+    async def search_by_urls(self, urls):
+        results = []
+        
+        tasks = [self.scrape_single_url(url) for url in urls]
+        results = await asyncio.gather(*tasks)
+        return results
+
+    async def scrape_single_url(self, url):
+        print(f"url: {url}")
+        run_input = {
+            "searchMode": "live",
+            "maxTweets": 200,
+            "maxRequestRetries": 3,
+            "addUserInfo": True,
+            # "scrapeTweetReplies": False,
+            "maxTweets": 1,
+            "urls": [url],
+        }
+        run = self.actor.call(run_input=run_input, timeout_secs=300)
+        dataset = self.client.dataset(run["defaultDatasetId"])
+        items = dataset.iterate_items()
+        fetched_items = []
+        for item in items:
+            fetched_items.append(item)
+        return fetched_items
 
     def save(self):
         """

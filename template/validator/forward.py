@@ -18,10 +18,10 @@
 # DEALINGS IN THE SOFTWARE.
 
 import bittensor as bt
-
+from template.utils.utilities import functools, run_in_subprocess
 from template.protocol import Dummy
 from template.validator.reward import get_rewards
-from template.utils.uids import get_random_uids
+from template.utils.uids import get_random_uids, get_all_uids
 
 
 async def forward(self):
@@ -34,30 +34,37 @@ async def forward(self):
         self (:obj:`bittensor.neuron.Neuron`): The neuron object which contains all the necessary state for the validator.
 
     """
-    # TODO(developer): Define how the validator selects a miner to query, how often, etc.
+    # TODO: default num_blocks_for_validation is 100
     if self.subtensor.block - self.last_block > self.config.num_blocks_for_validation:
-        miner_uids = get_random_uids(self, k=self.config.neuron.sample_size)
-        bt.logging.success("validator is querying")
+        miners = get_all_uids(self)
+        bt.logging.success("validator is getting commits from all miners")
+        # get all miners from the metagraph
+
+        responses = []
+        miner_uids = []
+
+        for miner in miners:
+            miner_uids.append(miner['uid'])
+
+            try:
+                latest_commit = self.subtensor.get_commitment(netuid = self.config.netuid, uid = miner['uid'])
+                partial = functools.partial(bt.extrinsics.serving.get_metadata, self.subtensor, self.config.netuid, miner['hotkey'])
+                metadata = run_in_subprocess(partial, 30)
+                if self.subtensor.block - metadata['block'] > 150:
+                    responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': None, 'block': None})
+                # print(f"latest_commit: {latest_commit} block: {metadata['block']}")
+                else:
+                    responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': latest_commit, 'block': metadata['block']})
+                # responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': latest_commit, 'block': metadata['block']})
+            except Exception as e:
+                bt.logging.error(f"failed to get metadata from miner {miner['uid']}")
+                responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': None, 'block': None})
+                continue
+        print(f"responses: {responses}")
+        rewards = get_rewards(self, responses=responses)
         self.last_block = self.subtensor.block
-    # get_random_uids is an example method, but you can replace it with your own.
-    # The dendrite client queries the network.
-    # responses = await self.dendrite(
-    #     # Send the query to selected miner axons in the network.
-    #     axons=[self.metagraph.axons[uid] for uid in miner_uids],
-    #     # Construct a dummy query. This simply contains a single integer.
-    #     synapse=Dummy(dummy_input=self.step),
-    #     # All responses have the deserialize function called on them before returning.
-    #     # You are encouraged to define your own deserialization function.
-    #     deserialize=True,
-    # )
+        bt.logging.info(f"Scored responses: {rewards}")
+        # Update the scores based on the rewards. You may want to define your own update_scores function for custom behavior.
+        self.update_scores(rewards, miner_uids)
 
-    # # Log the results for monitoring purposes.
-    # bt.logging.info(f"Received responses: {responses}")
-0
-    # # TODO(developer): Define how the validator scores responses.
-    # # Adjust the scores based on responses from miners.
-    # rewards = get_rewards(self, query=self.step, responses=responses)
 
-    # bt.logging.info(f"Scored responses: {rewards}")
-    # Update the scores based on the rewards. You may want to define your own update_scores function for custom behavior.
-    # self.update_scores(rewards, miner_uids)

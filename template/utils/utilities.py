@@ -5,6 +5,9 @@ from typing import Any, Optional, Tuple
 import bittensor as bt
 
 
+# def sopt_check(row):
+
+
 
 def assert_registered(wallet: bt.wallet, metagraph: bt.metagraph) -> int:
     """Asserts the wallet is a registered miner and returns the miner's UID.
