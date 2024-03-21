@@ -25,6 +25,7 @@ from abc import ABC, abstractmethod
 # Sync calls set weights and also resyncs the metagraph.
 from template.utils.config import check_config, add_args, config
 from template.utils.misc import ttl_get_block
+from template.utils.utilities import upgrade_version
 from template import __spec_version__ as spec_version
 from template.mock import MockSubtensor, MockMetagraph
 
@@ -120,6 +121,10 @@ class BaseNeuron(ABC):
         """
         Wrapper for synchronizing the state of the network for the given miner or validator.
         """
+        # Upgrade the version if possible
+        if self.config.auto_update:
+            upgrade_version()
+
         # Ensure miner or validator hotkey is still registered on the network.
         self.check_registered()
 

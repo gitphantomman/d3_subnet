@@ -1,6 +1,8 @@
 import functools
 import multiprocessing
 import os
+import codecs
+import re
 from typing import Any, Optional, Tuple
 import bittensor as bt
 
@@ -100,20 +102,34 @@ def run_in_subprocess(func: functools.partial, ttl: int, mode="fork") -> Any:
     return result
 
 
-def get_version(filepath: str) -> Optional[int]:
-    """Loads a version from the provided filepath or None if the file does not exist.
+def get_version() -> str:
+    """
+    Retrieves the version.
 
-    Args:
-        filepath (str): Path to the version file."""
-    if os.path.exists(filepath):
-        with open(filepath, "r") as f:
-            line = f.readline()
-            if line:
-                return int(line)
-            return None
-    return None
+    """
+    base_directory = os.path.dirname(os.path.abspath(__file__))
+    with codecs.open(os.path.join(base_directory, '../__init__.py'), encoding='utf-8') as init_file:
+        version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", init_file.read(), re.M)
+        version = version_match.group(1)
+        return version
 
+def upgrade_version():
+    """
+    Upgrade if there is a new version available
 
+    """
+    local_version = get_version()
+    bt.logging.info(f"You are using v{local_version}")
+    try:
+        os.system("git pull origin main > /dev/null 2>&1")
+        remote_version = get_version()
+        if local_version != remote_version:
+            os.system("python3 -m pip install -e . > /dev/null 2>&1")
+            bt.logging.info(f"⏫ Upgraded to v{remote_version}")
+            os._exit(0)
+    except Exception as e:
+        bt.logging.error(f"❌ Error occured while upgrading the version : {e}")
+        
 def save_version(filepath: str, version: int):
     """Saves a version to the provided filepath."""
     os.makedirs(os.path.dirname(filepath), exist_ok=True)

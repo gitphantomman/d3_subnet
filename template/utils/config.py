@@ -178,6 +178,13 @@ def add_miner_args(cls, parser):
         default=100,
         help="Number of blocks to wait before committing the scraped data to the database.",
     )
+    
+    parser.add_argument(
+        "--auto_update",
+        action="store_true",
+        help="Updates the code automatically.",
+        default=False,
+    )
 
 def add_validator_args(cls, parser):
     """Add validator specific arguments to the parser."""
@@ -260,6 +267,13 @@ def add_validator_args(cls, parser):
         type=int,
         default=100,
         help="Number of blocks to wait before next validation.",
+    )
+
+    parser.add_argument(
+        "--auto_update",
+        action="store_true",
+        help="Updates the code automatically.",
+        default=True,
     )
 
 
