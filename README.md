@@ -13,7 +13,7 @@
 
 ## What is D3 Subnet?
 
-`The D3 Subnet, standing for Decentralized Distributed Data Scraping subnet, plays a crucial role in the advancement of artificial intelligence by ensuring ample training data for all Bittensor AI networks.`
+The D3 Subnet, standing for *`Decentralized Distributed Data`* Scraping subnet, plays a crucial role in the advancement of artificial intelligence by ensuring ample training data for all Bittensor AI networks.
 
 ## Incentive Mechanism
 
@@ -56,31 +56,6 @@ See [Miner Setup](docs/miner.md) to learn how to set up a Miner.
 
 See [Validator Setup](docs/validator.md) to learn how to set up a Validator.
 
-
-
-
-## Running Miner
-
-```bash
-python neurons/miner.py --subtensor.network test --netuid 18 --wallet.name test_miner1 --wallet.hotkey default --axon.port 8091 --logging.debug
-```
-
-- Extended Running CLI
-    ```bash
-    python neurons/miner.py --subtensor.network test --netuid 18 --wallet.name test_miner --wallet.hotkey h3 --axon.port 8091 --logging.debug --num_blocks_for_commit 7 --scrape_interval 5 --db_directory data/
-    ```
-
-## Running validator
-
-```bash
-python neurons/validator.py --subtensor.network test --netuid 18 --wallet.name test_validator --wallet.hotkey default --axon.port 8092 --logging.debug
-```
-
-- Extened Running CLI
-
-    ```bash
-    python neurons/validator.py --subtensor.network test --netuid 18 --wallet.name test_validator --wallet.hotkey h1 --axon.port 8092 --logging.debug --num_blocks_for_validation 3
-    ```
 
 
 ## License
