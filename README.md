@@ -1,6 +1,6 @@
 <div align="center">
 
-# **Bittensor Subnet Template** <!-- omit in toc -->
+# **D3 Subnet** <!-- omit in toc -->
 [![Discord Chat](https://img.shields.io/discord/308323056592486420.svg)](https://discord.gg/bittensor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
@@ -11,8 +11,19 @@
 [Discord](https://discord.gg/bittensor) • [Network](https://taostats.io/) • [Research](https://bittensor.com/whitepaper)
 </div>
 
+## What is D3 Subnet?
 
-## Installation.
+`The D3 Subnet, standing for Decentralized Distributed Data Scraping subnet, plays a crucial role in the advancement of artificial intelligence by ensuring ample training data for all Bittensor AI networks.`
+
+## Incentive Mechanism
+
+Miners within the D3 Subnet are assessed based on the volume of unique data they contribute to the network, excluding any duplicates. To excel, miners are encouraged to gather as much data as possible, commit their findings as fast and frequently as possible to the blockchain.
+
+To ensure the accuracy of data counts while eliminating duplicates, validators require a Redis database equipped with an indexing table.
+
+The owner collects all the data of network downloading dataset from miners' commits and using the indexing table similar to validators.
+
+## Getting Started
 
 ### Clone the repository from github
 
@@ -37,9 +48,16 @@ python3 -m pip install -r requirements.txt
 
 ### Register hotkey to subnet
 
-- Please reference [Register guide](./docs/register.md).
-- Check if you're registered to subnet using `btcli w overview --subtensor.network test --wallet.name miner`.
-- You can check the metagraph using `btcli subnets metagraph --subtensor.network test --netuid 18`.
+- Please reference [Register guide](https://docs.bittensor.com/subnets/register-validate-mine).
+- Check if you're registered to subnet using `btcli w overview --subtensor.network finney --wallet.name miner`.
+- You can check the metagraph using `btcli subnets metagraph --subtensor.network finney --netuid 18`.
+
+See [Miner Setup](docs/miner.md) to learn how to set up a Miner.
+
+See [Validator Setup](docs/validator.md) to learn how to set up a Validator.
+
+
+
 
 ## Running Miner
 
@@ -49,7 +67,7 @@ python neurons/miner.py --subtensor.network test --netuid 18 --wallet.name test_
 
 - Extended Running CLI
     ```bash
-    python neurons/miner.py --subtensor.network test --netuid 18 --wallet.name test_miner1 --wallet.hotkey default --axon.port 8091 --logging.debug --num_blocks_for_commit 7 --scrape_interval 5 --db_directory data/
+    python neurons/miner.py --subtensor.network test --netuid 18 --wallet.name test_miner --wallet.hotkey h3 --axon.port 8091 --logging.debug --num_blocks_for_commit 7 --scrape_interval 5 --db_directory data/
     ```
 
 ## Running validator
@@ -85,3 +103,4 @@ This repository is licensed under the MIT License.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 ```
+

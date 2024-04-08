@@ -21,7 +21,7 @@ import torch
 from typing import List
 from datasets import load_dataset
 import bittensor as bt
-import indexing
+import neurons.indexing as indexing
 from scraping.twitter import twitter_scraper
 import os
 from dotenv import load_dotenv
@@ -58,15 +58,20 @@ def get_rewards(
     for response in responses:
         if response['commit'] is not None:
             # Download dataset
-            repo_id = response['commit'].split("/datasets/")[-1]
-            response['dataset'] = load_dataset(repo_id)
-            response['num_rows'] = len(response['dataset']['train'])
-            total_num_rows += response['num_rows']
+            try:
+                repo_id = response['commit'].split("/datasets/")[-1]
+                response['dataset'] = load_dataset(repo_id)
+                response['num_rows'] = len(response['dataset']['train'])
+                total_num_rows += response['num_rows']
+            except Exception as e:
+                bt.logging.error(f"Failed to load dataset from miner {response['uid']}")
+                response['dataset'] = None
+                response['num_rows'] = 0
         else:
             response['dataset'] = None
             response['num_rows'] = 0
     num_times = 1
-    urls = []
+    urls_for_spotcheck = []
     uids = []
     if total_num_rows > 100000:
         num_times = total_num_rows / 100000
@@ -75,9 +80,11 @@ def get_rewards(
         if response['dataset'] is not None:
             random_samples = response['dataset']['train'].shuffle().select(range(response['num_samples']))
 
+            # Get a random spot check item
             random_spot_sample = response['dataset']['train'].shuffle().select(range(1))
+
             spot_check_items[response['uid']] = random_spot_sample[0]
-            urls.append(random_spot_sample[0]['url'])
+            urls_for_spotcheck.append(random_spot_sample[0]['url'])
             uids.append(response['uid'])
 
             for row in random_samples:
@@ -96,7 +103,7 @@ def get_rewards(
             random_samples = None
         response['samples'] = random_samples
     
-    searched_results = asyncio.run(twitter_scraper.search_by_urls(urls))
+    searched_results = asyncio.run(twitter_scraper.search_by_urls(urls_for_spotcheck))
         
     keys = indexing.get_all_temp_indexing_keys()
     

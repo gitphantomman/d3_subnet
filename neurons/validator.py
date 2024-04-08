@@ -26,7 +26,6 @@ import indexing
 import os
 from dotenv import load_dotenv
 # Bittensor Validator Template:
-import template
 from template.validator import forward
 
 # import base validator class which takes care of most of the boilerplate
@@ -79,7 +78,7 @@ class Validator(BaseValidatorNeuron):
                 else:
                     indexed_cnt += 1
                     indexing.save(row['id'], 1)
-            except e:
+            except Exception as e:
                 continue
         bt.logging.info(f"Indexed {indexed_cnt} rows among {len(dataset['train'])} rows")
         bt.logging.success(f"Indexing finished")

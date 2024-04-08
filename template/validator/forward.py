@@ -50,7 +50,7 @@ async def forward(self):
                 latest_commit = self.subtensor.get_commitment(netuid = self.config.netuid, uid = miner['uid'])
                 partial = functools.partial(bt.extrinsics.serving.get_metadata, self.subtensor, self.config.netuid, miner['hotkey'])
                 metadata = run_in_subprocess(partial, 30)
-                if self.subtensor.block - metadata['block'] > 150:
+                if self.subtensor.block - metadata['block'] > 1000:
                     responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': None, 'block': None})
                 # print(f"latest_commit: {latest_commit} block: {metadata['block']}")
                 else:

@@ -6,3 +6,4 @@ apify_client
 python-dotenv
 pandas
 datasets
+asyncio
