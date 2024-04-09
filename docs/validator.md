@@ -70,3 +70,4 @@ python neurons/validator.py --subtensor.network local --netuid 18 --wallet.name 
 -    `--wallet.name`: Specify the name of the cold key holding the hotkey linked to your miner.
 -    `--wallet.hotkey`: Enter the name of the hotkey registered to your miner.
 -    `--num_blocks_for_validation`: Define the count of blocks until the next validation.
+-    `--auto_update`: If this is True, validators will update their repo automatically. The default config value is `True`.

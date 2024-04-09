@@ -50,3 +50,4 @@ python neurons/miner.py --subtensor.network finney --netuid 18 --wallet.name def
 -    `--num_blocks_for_commit`: Define the count of blocks until the next commit.
 -    `--scrape_interval`: Set the time interval (in seconds) for scraping operations.
 -    `--db_directory`: Indicate the local directory path for storing temporary data sets.
+-    `--auto_update`: If this is True, miners will update their repo automatically. The default config value is `False`.

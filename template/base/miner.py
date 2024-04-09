@@ -130,13 +130,8 @@ class BaseMinerNeuron(BaseNeuron):
                         upload_url = create_hf_dataset_from_sqlite(self.subtensor, self.wallet, self.config.netuid, self.config.db_directory+"twitter_data.db", "tweets", filename , "Dataset of tweets scraped from Twitter.")
 
                         bt.logging.success(f"⬆️ uploading dataset to huggingface : {upload_url}")
-
-                        #commit upload_url to subtensor chain
-                        self.subtensor.commit(self.wallet, self.config.netuid, upload_url)
-                        bt.logging.success(f"📝 committed dataset to subtensor chain")
-                        time.sleep(10)
-                    except BaseException as e:
-                        bt.logging.error(f"Error while committing to subtensor chain: {e}")
+                    except Exception as e:
+                        bt.logging.error(f"Error while uploading: {e}")
                     #remove db file
                     os.remove(self.config.db_directory+"twitter_data.db")
                     bt.logging.info(f"🚮 removed db file")
