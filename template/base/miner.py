@@ -58,7 +58,7 @@ class BaseMinerNeuron(BaseNeuron):
             )
 
         # The axon handles request processing, allowing validators to send this miner requests.
-        self.axon = bt.axon(wallet=self.wallet, config=self.config)
+        # self.axon = bt.axon(wallet=self.wallet, config=self.config)
 
         # Attach determiners which functions are called when servicing a request.
         # bt.logging.info(f"Attaching forward function to miner axon.")
@@ -67,7 +67,7 @@ class BaseMinerNeuron(BaseNeuron):
         #     blacklist_fn=self.blacklist,
         #     priority_fn=self.priority,
         # )
-        bt.logging.info(f"Axon created: {self.axon}")
+        # bt.logging.info(f"Axon created: {self.axon}")
 
         # Instantiate runners
         self.should_exit: bool = False
@@ -105,13 +105,13 @@ class BaseMinerNeuron(BaseNeuron):
 
         # Serve passes the axon information to the network + netuid we are hosting on.
         # This will auto-update if the axon port of external ip have changed.
-        bt.logging.info(
-            f"Serving miner axon {self.axon} on network: {self.config.subtensor.chain_endpoint} with netuid: {self.config.netuid}"
-        )
-        self.axon.serve(netuid=self.config.netuid, subtensor=self.subtensor)
+        # bt.logging.info(
+        #     f"Serving miner axon {self.axon} on network: {self.config.subtensor.chain_endpoint} with netuid: {self.config.netuid}"
+        # )
+        # self.axon.serve(netuid=self.config.netuid, subtensor=self.subtensor)
 
-        # Start  starts the miner's axon, making it active on the network.
-        self.axon.start()
+        # # Start  starts the miner's axon, making it active on the network.
+        # self.axon.start()
 
         bt.logging.info(f"Miner starting at block: {self.block}")
 
@@ -154,7 +154,7 @@ class BaseMinerNeuron(BaseNeuron):
 
         # If someone intentionally stops the miner, it'll safely terminate operations.
         except KeyboardInterrupt:
-            self.axon.stop()
+            # self.axon.stop()
             bt.logging.success("Miner killed by keyboard interrupt.")
             exit()
 
