@@ -1,19 +1,22 @@
 <div align="center">
 
 # **D3 Subnet** <!-- omit in toc -->
-[![Discord Chat](https://img.shields.io/discord/308323056592486420.svg)](https://discord.gg/bittensor)
+[![Discord Chat](https://img.shields.io/badge/chat-25519-blue)](https://discord.gg/bittensor)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 
 ---
-
+    
 ## The Incentivized Internet <!-- omit in toc -->
 
-[Discord](https://discord.gg/bittensor) • [Network](https://taostats.io/) • [Research](https://bittensor.com/whitepaper)
+[Discord](https://discord.gg/bittensor) • [Network](https://taostats.io/) • [Research](https://bittensor.com/whitepaper) • [Bittensor Dataset Hub](https://huggingface.co/bittensor-dataset)
 </div>
 
+![d3 image](docs/d3.png)
 ## What is D3 Subnet?
 
 The D3 Subnet, standing for *`Decentralized Distributed Data`* Scraping subnet, plays a crucial role in the advancement of artificial intelligence by ensuring ample training data for all Bittensor AI networks.
+
+We're building **[Bittensor Dataset Hub](https://huggingface.co/bittensor-dataset)**.
 
 ## Incentive Mechanism
 
