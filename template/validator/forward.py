@@ -34,7 +34,6 @@ async def forward(self):
         self (:obj:`bittensor.neuron.Neuron`): The neuron object which contains all the necessary state for the validator.
 
     """
-    # TODO: default num_blocks_for_validation is 100
     if self.subtensor.block - self.last_block > self.config.num_blocks_for_validation:
         miners = get_all_uids(self)
         bt.logging.success("validator is getting commits from all miners")
@@ -50,7 +49,7 @@ async def forward(self):
                 latest_commit = self.subtensor.get_commitment(netuid = self.config.netuid, uid = miner['uid'])
                 partial = functools.partial(bt.extrinsics.serving.get_metadata, self.subtensor, self.config.netuid, miner['hotkey'])
                 metadata = run_in_subprocess(partial, 30)
-                if self.subtensor.block - metadata['block'] > 1000:
+                if self.subtensor.block - metadata['block'] > 300:
                     responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': None, 'block': None})
                 # print(f"latest_commit: {latest_commit} block: {metadata['block']}")
                 else:

@@ -265,7 +265,7 @@ def add_validator_args(cls, parser):
     parser.add_argument(
         "--num_blocks_for_validation",
         type=int,
-        default=250,
+        default=200,
         help="Number of blocks to wait before next validation.",
     )
 
