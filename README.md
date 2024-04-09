@@ -53,7 +53,7 @@ python3 -m pip install -r requirements.txt
 
 - Please reference [Register guide](https://docs.bittensor.com/subnets/register-validate-mine).
 - Check if you're registered to subnet using `btcli w overview --subtensor.network finney --wallet.name miner`.
-- You can check the metagraph using `btcli subnets metagraph --subtensor.network finney --netuid 18`.
+- You can check the metagraph using `btcli subnets metagraph --subtensor.network finney --netuid 10`.
 
 See [Miner Setup](docs/miner.md) to learn how to set up a Miner.
 

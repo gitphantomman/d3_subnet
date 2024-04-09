@@ -36,12 +36,12 @@ Please configure the miner by completing the `.env` file.
 ### Running the miner script
 
 ```bash
-python neurons/miner.py --subtensor.network finney --netuid 18 --wallet.name default --wallet.hotkey default --axon.port 8091 --logging.debug
+python neurons/miner.py --subtensor.network finney --netuid 10 --wallet.name default --wallet.hotkey default --axon.port 8091 --logging.debug
 ```
 
 ### Extended Running CLI
 ```bash
-python neurons/miner.py --subtensor.network finney --netuid 18 --wallet.name default --wallet.hotkey default --axon.port 8091 --logging.debug --num_blocks_for_commit 200 --scrape_interval 120 --db_directory data/
+python neurons/miner.py --subtensor.network finney --netuid 10 --wallet.name default --wallet.hotkey default --axon.port 8091 --logging.debug --num_blocks_for_commit 200 --scrape_interval 120 --db_directory data/
 ```
 
 
