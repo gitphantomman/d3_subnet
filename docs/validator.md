@@ -12,7 +12,7 @@ For reference, if there is a lot of data from miners between 250 blocks, samples
 # Validator Requirements
 
 Validators will need high capacity RAM for building Redis indexing table.
-It is recommended to have at least 200GB of RAM space.
+It is recommended to have at least 50GB of RAM space.
 
 Also, validators will need apify API token for spotcheck. (https://console.apify.com/billing/subscription)
 
