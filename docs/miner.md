@@ -20,7 +20,7 @@ Also, miners will need apify API token for scraping. (https://console.apify.com/
 Please create a `.env` file based on the `.env.example` template.
 
 ```python
-TwitterScraperRunId=
+TwitterScraperActorId=
 APIFY_KEY=
 HF_TOKEN=
 ```

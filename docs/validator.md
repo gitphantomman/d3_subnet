@@ -21,7 +21,7 @@ Also, validators will need apify API token for spotcheck. (https://console.apify
 Please create a `.env` file based on the `.env.example` template.
 
 ```python
-TwitterScraperRunId=
+TwitterScraperActorId=
 APIFY_KEY=
 MAIN_REPO_ID=bittensor-dataset/twitter-text-dataset
 REDIS_HOST=

@@ -12,7 +12,7 @@ class TwitterScraper(BaseScraper):
     def __init__(self, save_path, apify_key):
         super().__init__(save_path)
         self.api_key = apify_key
-        self.run_id = os.getenv("TwitterScraperRunId")
+        self.run_id = os.getenv("TwitterScraperActorId")
         # Assuming the existence of a Twitter API client setup
         self.client = self.setup_twitter_client(apify_key)
         self.actor = self.client.actor(self.run_id)
