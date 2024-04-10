@@ -68,12 +68,16 @@ class TwitterScraper(BaseScraper):
             "maxTweets": 1,
             "urls": [url],
         }
-        run = self.actor.call(run_input=run_input, timeout_secs=300)
-        dataset = self.client.dataset(run["defaultDatasetId"])
-        items = dataset.iterate_items()
-        fetched_items = []
-        for item in items:
-            fetched_items.append(item)
+        try:
+            run = self.actor.call(run_input=run_input, timeout_secs=300)
+            dataset = self.client.dataset(run["defaultDatasetId"])
+            items = dataset.iterate_items()
+            fetched_items = []
+            for item in items:
+                fetched_items.append(item)
+        except Exception as e:
+            fetched_items = []
+            logging.error(f"Error fetching data for url: {url}, error: {e}")
         return fetched_items
 
     def save(self):
