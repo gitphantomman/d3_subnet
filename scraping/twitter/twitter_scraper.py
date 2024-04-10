@@ -75,6 +75,7 @@ class TwitterScraper(BaseScraper):
             fetched_items = []
             for item in items:
                 fetched_items.append(item)
+            logging.info(f"✅ Fetched data for url: {url}")
         except Exception as e:
             fetched_items = []
             logging.error(f"Error fetching data for url: {url}, error: {e}")
