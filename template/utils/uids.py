@@ -80,12 +80,12 @@ def get_all_uids(self):
     avail_uids = []
 
     for uid, item in enumerate(self.metagraph.axons):
-        uid_is_available = check_uid_availability(
-            self.metagraph, uid, self.config.neuron.vpermit_tao_limit
-        )
+        # uid_is_available = check_uid_availability(
+        #     self.metagraph, uid, self.config.neuron.vpermit_tao_limit
+        # )
 
-        if uid_is_available:
-            avail_uids.append({'uid': uid, 'hotkey': item.hotkey})
+        # if uid_is_available:
+        avail_uids.append({'uid': uid, 'hotkey': item.hotkey})
 
     
     # uids = torch.tensor(avail_uids)
