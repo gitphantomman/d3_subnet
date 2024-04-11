@@ -70,41 +70,50 @@ def get_rewards(
         else:
             response['dataset'] = None
             response['num_rows'] = 0
+    bt.logging.info(f"Total number of rows: {total_num_rows}")
     num_times = 1
     urls_for_spotcheck = []
     uids = []
     if total_num_rows > 100000:
         num_times = total_num_rows / 100000
-    for response in responses:
-        response['num_samples'] = int(response['num_rows'] / num_times)
-        if response['dataset'] is not None:
-            random_samples = response['dataset']['train'].shuffle().select(range(response['num_samples']))
+    try:
+        for response in responses:
+            response['num_samples'] = int(response['num_rows'] / num_times)
+            if response['dataset'] is not None:
+                random_samples = response['dataset']['train'].shuffle().select(range(response['num_samples']))
 
-            # Get a random spot check item
-            random_spot_sample = response['dataset']['train'].shuffle().select(range(1))
+                # Get a random spot check item
+                random_spot_sample = response['dataset']['train'].shuffle().select(range(1))
 
-            spot_check_items[response['uid']] = random_spot_sample[0]
-            urls_for_spotcheck.append(random_spot_sample[0]['url'])
-            uids.append(response['uid'])
+                spot_check_items[response['uid']] = random_spot_sample[0]
+                urls_for_spotcheck.append(random_spot_sample[0]['url'])
+                uids.append(response['uid'])
 
-            for row in random_samples:
-                already_indexed = indexing.get_temp_indexing(row['id'])
-                if indexing.get(row['id']) is not None:
-                    continue
-                if already_indexed is not None:
-                    
-                    if int(already_indexed.split("_")[0]) > response['block']:
+                for row in random_samples:
+                    already_indexed = indexing.get_temp_indexing(row['id'])
+                    if indexing.get(row['id']) is not None:
+                        continue
+                    if already_indexed is not None:
+                        
+                        if int(already_indexed.split("_")[0]) > response['block']:
+                            indexing.save_temp_indexing(row['id'], str(response['block']) + "_" + str(response['uid']))
+                    else:
                         indexing.save_temp_indexing(row['id'], str(response['block']) + "_" + str(response['uid']))
-                else:
-                    indexing.save_temp_indexing(row['id'], str(response['block']) + "_" + str(response['uid']))
-            for row in response['dataset']['train']:
-                indexing.save(row['id'], 1)
-        else:
-            random_samples = None
-        response['samples'] = random_samples
+                for row in response['dataset']['train']:
+                    indexing.save(row['id'], 1)
+            else:
+                random_samples = None
+            response['samples'] = random_samples
+    except Exception as e:
+        bt.logging.error(f"Failed to get random samples from dataset")
+        return torch.FloatTensor([0] * len(responses)).to(self.device)
+    bt.logging.info(f"Spot check items: {spot_check_items}")
+    try:
+        searched_results = asyncio.run(twitter_scraper.search_by_urls(urls_for_spotcheck))
+    except Exception as e:
+        bt.logging.error(f"Failed to scrape data from Twitter")
+        return torch.FloatTensor([0] * len(responses)).to(self.device)
     
-    searched_results = asyncio.run(twitter_scraper.search_by_urls(urls_for_spotcheck))
-        
     keys = indexing.get_all_temp_indexing_keys()
     
     counts = {}
@@ -118,11 +127,15 @@ def get_rewards(
             counts[uid] += 1
         
     for i in range(len(searched_results)):
-        if spot_check_items[uids[i]]['user_id'] != searched_results[i][0]['user_id_str']:
-            bt.logging.info("Wrong tweet!")
-            counts[str(uids[i])] = 0
-        else: 
-            bt.logging.info("Correct tweet!")
+        try:
+            if spot_check_items[uids[i]]['user_id'] != searched_results[i][0]['user_id_str']:
+                bt.logging.info("Wrong tweet!")
+                counts[str(uids[i])] = 0
+            else: 
+                bt.logging.info("Correct tweet!")
+        except Exception as e:
+            bt.logging.error(f"Failed to compare spot check items")
+            counts[str(uids[i])] = 0.5
     # Remove temp indexing
     indexing.remove_temp_indexing()
     # Get all the reward results by iteratively calling your reward() function.
