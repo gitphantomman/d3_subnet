@@ -117,27 +117,31 @@ def get_rewards(
     keys = indexing.get_all_temp_indexing_keys()
     
     counts = {}
-    for key in keys:
-        
-        value = indexing.get_temp_indexing(key)
-        block, uid = value.split("_")
-        if uid not in counts:
-            counts[uid] = 1
-        else:
-            counts[uid] += 1
-        
-    for i in range(len(searched_results)):
-        try:
-            if spot_check_items[uids[i]]['user_id'] != searched_results[i][0]['user_id_str']:
-                bt.logging.info("Wrong tweet!")
-                counts[str(uids[i])] = 0
-            else: 
-                bt.logging.info("Correct tweet!")
-        except Exception as e:
-            bt.logging.error(f"Failed to compare spot check items")
-            counts[str(uids[i])] = 0.5
-    # Remove temp indexing
-    indexing.remove_temp_indexing()
+    try:
+        for key in keys:
+            
+            value = indexing.get_temp_indexing(key)
+            block, uid = value.split("_")
+            if uid not in counts:
+                counts[uid] = 1
+            else:
+                counts[uid] += 1
+            
+        for i in range(len(searched_results)):
+            try:
+                if spot_check_items[uids[i]]['user_id'] != searched_results[i][0]['user_id_str']:
+                    bt.logging.info("Wrong tweet!")
+                    counts[str(uids[i])] = 0
+                else: 
+                    bt.logging.info("Correct tweet!")
+            except Exception as e:
+                bt.logging.error(f"Failed to compare spot check items")
+                counts[str(uids[i])] = 0.5
+        # Remove temp indexing
+        indexing.remove_temp_indexing()
+    except Exception as e:
+        bt.logging.error(f"Failed to get counts")
+        return torch.FloatTensor([0] * len(responses)).to(self.device)
     # Get all the reward results by iteratively calling your reward() function.
     return torch.FloatTensor(
         [counts.get(str(response['uid']), 0) ** 2 for response in responses]  # default value of 0 if key does not exist
