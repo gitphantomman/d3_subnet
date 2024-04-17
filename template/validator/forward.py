@@ -47,9 +47,10 @@ async def forward(self):
 
             try:
                 latest_commit = self.subtensor.get_commitment(netuid = self.config.netuid, uid = miner['uid'])
+                bt.logging.success(f"Got the latest commit from miner {miner['uid']}")
                 partial = functools.partial(bt.extrinsics.serving.get_metadata, self.subtensor, self.config.netuid, miner['hotkey'])
                 metadata = run_in_subprocess(partial, 30)
-                if self.subtensor.block - metadata['block'] > 300:
+                if self.subtensor.block - metadata['block'] > 200:
                     responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': None, 'block': None})
                 # print(f"latest_commit: {latest_commit} block: {metadata['block']}")
                 else:
@@ -59,7 +60,7 @@ async def forward(self):
                 bt.logging.error(f"failed to get metadata from miner {miner['uid']}")
                 responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': None, 'block': None})
                 continue
-        print(f"responses: {responses}")
+        bt.logging.success("Got all commits from miners")
         rewards = get_rewards(self, responses=responses)
         self.last_block = self.subtensor.block
         bt.logging.info(f"Scored responses: {rewards}")
