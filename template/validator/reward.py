@@ -56,11 +56,18 @@ def get_rewards(
     """
     total_num_rows = 0
     spot_check_items = {}
+    username_uids = {}
     for response in responses:
         if response['commit'] is not None:
             # Download dataset
             try:
                 repo_id = response['commit'].split("/datasets/")[-1]
+                username, url = repo_id.split("/")
+                if username in username_uids and username_uids[username] != response['uid']:
+                    response['dataset'] = None
+                    response['num_rows'] = 0
+                    continue
+                username_uids[username] = response['uid']
                 response['dataset'] = load_dataset(repo_id)
                 response['num_rows'] = len(response['dataset']['train'])
                 total_num_rows += response['num_rows']
@@ -71,6 +78,7 @@ def get_rewards(
         else:
             response['dataset'] = None
             response['num_rows'] = 0
+
     bt.logging.info(f"Total number of rows: {total_num_rows}")
     num_times = 1
     urls_for_spotcheck = []
