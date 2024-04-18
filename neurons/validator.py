@@ -22,6 +22,7 @@ import time
 import bittensor as bt
 from datasets import load_dataset
 import indexing
+from bittensor import logging
 
 import os
 from dotenv import load_dotenv
@@ -46,9 +47,6 @@ class Validator(BaseValidatorNeuron):
         self.last_block = self.subtensor.block
         bt.logging.info("load_state()")
         self.load_state()
-        # TODO: Sync redis db from owner
-        self.sync_indexing_table()
-        # TODO(developer): Anything specific to your use case you can do here
 
     async def forward(self):
         """
@@ -61,30 +59,10 @@ class Validator(BaseValidatorNeuron):
         """
         # TODO(developer): Rewrite this function based on your protocol definition.
         return await forward(self)
-    def sync_indexing_table(self):
-        """
-        Sync the indexing table from the owner.
-        """
-        repo_id = os.getenv("MAIN_REPO_ID")
-        dataset = load_dataset(repo_id)
-        indexed_cnt = 0
-        # Index the dataset
-        for row in dataset['train']:
-            try:
-                # Skip if already indexed
-                if indexing.get(row['id']):
-                    continue
-                # Index the row
-                else:
-                    indexed_cnt += 1
-                    indexing.save(row['id'], 1)
-            except Exception as e:
-                continue
-        bt.logging.info(f"Indexed {indexed_cnt} rows among {len(dataset['train'])} rows")
-        bt.logging.success(f"Indexing finished")
+
 # The main function parses the configuration and runs the validator.
 if __name__ == "__main__":
     with Validator() as validator:
         while True:
-            bt.logging.info("Validator running...", time.time())
+            bt.logging.info(f"Current block: {validator.subtensor.block} at {time.time()}")
             time.sleep(5)

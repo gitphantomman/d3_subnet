@@ -40,6 +40,7 @@ def reward(query: int, response: int) -> float:
 
 
 twitter_scraper = twitter_scraper.TwitterScraper("data/", os.getenv("APIFY_KEY"))
+
 def get_rewards(
     self,
     responses
@@ -94,7 +95,6 @@ def get_rewards(
                     if indexing.get(row['id']) is not None:
                         continue
                     if already_indexed is not None:
-                        
                         if int(already_indexed.split("_")[0]) > response['block']:
                             indexing.save_temp_indexing(row['id'], str(response['block']) + "_" + str(response['uid']))
                     else:
@@ -146,4 +146,3 @@ def get_rewards(
     return torch.FloatTensor(
         [counts.get(str(response['uid']), 0) ** 2 for response in responses]  # default value of 0 if key does not exist
     ).to(self.device)
-
