@@ -99,7 +99,7 @@ async def forward(self):
                 bt.logging.success(f"Got the latest commit from miner {miner['uid']}")
                 partial = functools.partial(bt.extrinsics.serving.get_metadata, self.subtensor, self.config.netuid, miner['hotkey'])
                 metadata = run_in_subprocess(partial, 30)
-                if self.subtensor.block - metadata['block'] > 200:
+                if self.subtensor.block - metadata['block'] > 300:
                     responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': None, 'block': None})
                 # print(f"latest_commit: {latest_commit} block: {metadata['block']}")
                 else:
