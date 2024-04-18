@@ -47,9 +47,6 @@ class Validator(BaseValidatorNeuron):
         self.last_block = self.subtensor.block
         bt.logging.info("load_state()")
         self.load_state()
-        # TODO: Sync redis db from owner
-        self.sync_indexing_table()
-        # TODO(developer): Anything specific to your use case you can do here
 
     async def forward(self):
         """
@@ -63,56 +60,9 @@ class Validator(BaseValidatorNeuron):
         # TODO(developer): Rewrite this function based on your protocol definition.
         return await forward(self)
 
-    def sync_indexing_table(self):
-        """
-        Sync the indexing table from the owner.
-        """
-        repo_id = os.getenv("MAIN_REPO_ID")
-        try:
-            dataset = load_dataset(repo_id, split='train', columns=['id'])
-            pipeline = indexing.r.pipeline(transaction=False)
-            batch_size = 10000
-            total_rows = 0
-            indexed_cnt = 0
-            all_set = True
-            for row in dataset:
-                pipeline.setnx(row['id'], 1)
-                total_rows += 1
-
-                if total_rows % batch_size == 0:
-                    try:
-                        indexed_results = pipeline.execute()
-                        indexed_cnt += sum(indexed_results)
-                        if not all(indexed_results):
-                            all_set = False
-                            logging.info("The dataset is indexed from this point in time.")
-                            break
-                    except Exception as e:
-                        logging.error(f"Failed to index the dataset: {e}")
-                        continue
-                    logging.info(f"Processed {total_rows} rows, Indexed {indexed_cnt} new rows.")
-
-            if total_rows % batch_size != 0:
-                indexed_results = pipeline.execute()
-                indexed_cnt += sum(indexed_results)
-                if not all(indexed_results):
-                    logging.info("Duplicate found in the dataset.")
-
-            last_indexed = dataset[-1]['id']
-            logging.info(f"Total processed rows: {total_rows}, Indexed {indexed_cnt} rows.")
-            if all_set:
-                last_indexed = dataset[-1]['id']
-                flag_key = f"{repo_id}:{last_indexed}"
-                indexing.r.set(flag_key, "true")
-                logging.success(f"Successfully indexed the dataset. Last indexed key: {flag_key}")
-        except Exception as e:
-            logging.error(f"Failed to index the dataset: {e}")
-
-
 # The main function parses the configuration and runs the validator.
 if __name__ == "__main__":
     with Validator() as validator:
         while True:
-            validator.sync_indexing_table()
             bt.logging.info(f"Current block: {validator.subtensor.block} at {time.time()}")
             time.sleep(5)
