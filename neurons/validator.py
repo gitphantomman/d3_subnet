@@ -33,6 +33,8 @@ from template.validator import forward
 from template.base.validator import BaseValidatorNeuron
 
 load_dotenv()
+
+
 class Validator(BaseValidatorNeuron):
     """
     Your validator neuron class. You should use this class to define your validator's behavior. In particular, you should replace the forward function with your own logic.

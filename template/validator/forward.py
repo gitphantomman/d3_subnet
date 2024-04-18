@@ -36,7 +36,8 @@ def sync_last_indexed():
         batch_size = 10000
         total_rows = 0
         indexed_cnt = 0
-        all_set = True
+        last_indexed = indexing.get(f"{repo_id}:last", None)
+
         for row in dataset:
             pipeline.setnx(row['id'], 1)
             total_rows += 1
@@ -45,10 +46,6 @@ def sync_last_indexed():
                 try:
                     indexed_results = pipeline.execute()
                     indexed_cnt += sum(indexed_results)
-                    if not all(indexed_results):
-                        all_set = False
-                        logging.info("The dataset is indexed from this point in time.")
-                        break
                 except Exception as e:
                     logging.error(f"Failed to index the dataset: {e}")
                     continue
@@ -57,16 +54,14 @@ def sync_last_indexed():
         if total_rows % batch_size != 0:
             indexed_results = pipeline.execute()
             indexed_cnt += sum(indexed_results)
-            if not all(indexed_results):
-                logging.info("Duplicate found in the dataset.")
 
         last_indexed = dataset[-1]['id']
         logging.info(f"Total processed rows: {total_rows}, Indexed {indexed_cnt} rows.")
-        if all_set:
-            last_indexed = dataset[-1]['id']
-            flag_key = f"{repo_id}:{last_indexed}"
-            indexing.r.set(flag_key, "true")
-            logging.success(f"Successfully indexed the dataset. Last indexed key: {flag_key}")
+
+        last_indexed = dataset[-1]['id']
+        flag_key = f"{repo_id}:last"
+        indexing.r.set(flag_key, last_indexed)
+        logging.success(f"Successfully indexed the dataset. Last indexed key: {flag_key}")
     except Exception as e:
         logging.error(f"Failed to index the dataset: {e}")
 
