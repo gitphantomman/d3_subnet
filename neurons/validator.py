@@ -22,6 +22,7 @@ import time
 import bittensor as bt
 from datasets import load_dataset
 import indexing
+from bittensor import logging
 
 import os
 from dotenv import load_dotenv
@@ -67,24 +68,51 @@ class Validator(BaseValidatorNeuron):
         Sync the indexing table from the owner.
         """
         repo_id = os.getenv("MAIN_REPO_ID")
-        dataset = load_dataset(repo_id)
         try:
-            # Index in a pipeline to prevent io bottleneck for validators
-            pipeline = indexing.r.pipeline()
-            for row in dataset['train']:
+            dataset = load_dataset(repo_id, split='train', columns=['id'])
+            pipeline = indexing.r.pipeline(transaction=False)
+            batch_size = 10000
+            total_rows = 0
+            indexed_cnt = 0
+            all_set = True
+            for row in dataset:
                 pipeline.setnx(row['id'], 1)
-            results = pipeline.execute()
-            indexed_cnt = sum(results)
-            bt.logging.info(f"Indexed {indexed_cnt} rows among {len(dataset['train'])} rows")
-            bt.logging.success("✅ Indexing finished")
+                total_rows += 1
+
+                if total_rows % batch_size == 0:
+                    try:
+                        indexed_results = pipeline.execute()
+                        indexed_cnt += sum(indexed_results)
+                        if not all(indexed_results):
+                            all_set = False
+                            logging.info("The dataset is indexed from this point in time.")
+                            break
+                    except Exception as e:
+                        logging.error(f"Failed to index the dataset: {e}")
+                        continue
+                    logging.info(f"Processed {total_rows} rows, Indexed {indexed_cnt} new rows.")
+
+            if total_rows % batch_size != 0:
+                indexed_results = pipeline.execute()
+                indexed_cnt += sum(indexed_results)
+                if not all(indexed_results):
+                    logging.info("Duplicate found in the dataset.")
+
+            last_indexed = dataset[-1]['id']
+            logging.info(f"Total processed rows: {total_rows}, Indexed {indexed_cnt} rows.")
+            if all_set:
+                last_indexed = dataset[-1]['id']
+                flag_key = f"{repo_id}:{last_indexed}"
+                indexing.r.set(flag_key, "true")
+                logging.success(f"Successfully indexed the dataset. Last indexed key: {flag_key}")
         except Exception as e:
-            bt.logging.error(f"Indexing failed: {e}")
+            logging.error(f"Failed to index the dataset: {e}")
 
 
 # The main function parses the configuration and runs the validator.
 if __name__ == "__main__":
     with Validator() as validator:
         while True:
-            bt.logging.info("Validator running...", time.time())
             validator.sync_indexing_table()
+            bt.logging.info(f"Current block: {validator.subtensor.block} at {time.time()}")
             time.sleep(5)

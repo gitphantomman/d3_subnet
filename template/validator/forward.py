@@ -22,6 +22,53 @@ from template.utils.utilities import functools, run_in_subprocess
 from template.protocol import Dummy
 from template.validator.reward import get_rewards
 from template.utils.uids import get_random_uids, get_all_uids
+from bittensor import logging
+import os
+from datasets import load_dataset
+import indexing
+
+
+def sync_last_indexed():
+    repo_id = os.getenv("MAIN_REPO_ID")
+    try:
+        dataset = load_dataset(repo_id, split='train', columns=['id'])
+        pipeline = indexing.r.pipeline(transaction=False)
+        batch_size = 10000
+        total_rows = 0
+        indexed_cnt = 0
+        all_set = True
+        for row in dataset:
+            pipeline.setnx(row['id'], 1)
+            total_rows += 1
+
+            if total_rows % batch_size == 0:
+                try:
+                    indexed_results = pipeline.execute()
+                    indexed_cnt += sum(indexed_results)
+                    if not all(indexed_results):
+                        all_set = False
+                        logging.info("The dataset is indexed from this point in time.")
+                        break
+                except Exception as e:
+                    logging.error(f"Failed to index the dataset: {e}")
+                    continue
+                logging.info(f"Processed {total_rows} rows, Indexed {indexed_cnt} new rows.")
+
+        if total_rows % batch_size != 0:
+            indexed_results = pipeline.execute()
+            indexed_cnt += sum(indexed_results)
+            if not all(indexed_results):
+                logging.info("Duplicate found in the dataset.")
+
+        last_indexed = dataset[-1]['id']
+        logging.info(f"Total processed rows: {total_rows}, Indexed {indexed_cnt} rows.")
+        if all_set:
+            last_indexed = dataset[-1]['id']
+            flag_key = f"{repo_id}:{last_indexed}"
+            indexing.r.set(flag_key, "true")
+            logging.success(f"Successfully indexed the dataset. Last indexed key: {flag_key}")
+    except Exception as e:
+        logging.error(f"Failed to index the dataset: {e}")
 
 
 async def forward(self):
@@ -39,6 +86,8 @@ async def forward(self):
         bt.logging.success("validator is getting commits from all miners")
         # get all miners from the metagraph
 
+        # Sync before getting the latest commits from the miners
+        sync_last_indexed()
         responses = []
         miner_uids = []
 
