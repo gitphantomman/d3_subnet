@@ -39,9 +39,7 @@ def reward(query: int, response: int) -> float:
     """
     return 1.0 if response == query * 2 else 0
 
-
 twitter_scraper = twitter_scraper.TwitterScraper("data/", os.getenv("APIFY_KEY"))
-
 
 def get_rewards(
     self,

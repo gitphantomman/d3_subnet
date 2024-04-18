@@ -28,44 +28,6 @@ from datasets import load_dataset
 import indexing
 
 
-def sync_last_indexed():
-    repo_id = os.getenv("MAIN_REPO_ID")
-    try:
-        dataset = load_dataset(repo_id, split='train', columns=['id'])
-        pipeline = indexing.r.pipeline(transaction=False)
-        batch_size = 10000
-        total_rows = 0
-        indexed_cnt = 0
-        last_indexed = indexing.get(f"{repo_id}:last", None)
-
-        for row in dataset:
-            pipeline.setnx(row['id'], 1)
-            total_rows += 1
-
-            if total_rows % batch_size == 0:
-                try:
-                    indexed_results = pipeline.execute()
-                    indexed_cnt += sum(indexed_results)
-                except Exception as e:
-                    logging.error(f"Failed to index the dataset: {e}")
-                    continue
-                logging.info(f"Processed {total_rows} rows, Indexed {indexed_cnt} new rows.")
-
-        if total_rows % batch_size != 0:
-            indexed_results = pipeline.execute()
-            indexed_cnt += sum(indexed_results)
-
-        last_indexed = dataset[-1]['id']
-        logging.info(f"Total processed rows: {total_rows}, Indexed {indexed_cnt} rows.")
-
-        last_indexed = dataset[-1]['id']
-        flag_key = f"{repo_id}:last"
-        indexing.r.set(flag_key, last_indexed)
-        logging.success(f"Successfully indexed the dataset. Last indexed key: {flag_key}")
-    except Exception as e:
-        logging.error(f"Failed to index the dataset: {e}")
-
-
 async def forward(self):
     """
     The forward function is called by the validator every time step.
@@ -82,7 +44,6 @@ async def forward(self):
         # get all miners from the metagraph
 
         # Sync before getting the latest commits from the miners
-        sync_last_indexed()
         responses = []
         miner_uids = []
 
