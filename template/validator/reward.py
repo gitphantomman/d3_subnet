@@ -17,6 +17,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import asyncio
 import torch
 from typing import List
 from datasets import load_dataset
@@ -26,7 +27,8 @@ from scraping.twitter import twitter_scraper
 import os
 from dotenv import load_dotenv
 load_dotenv()
-import asyncio
+
+
 def reward(query: int, response: int) -> float:
     """
     Reward the miner response to the dummy request. This method returns a reward
@@ -35,9 +37,7 @@ def reward(query: int, response: int) -> float:
     Returns:
     - float: The reward value for the miner.
     """
-
     return 1.0 if response == query * 2 else 0
-
 
 twitter_scraper = twitter_scraper.TwitterScraper("data/", os.getenv("APIFY_KEY"))
 
@@ -99,8 +99,6 @@ def get_rewards(
                             indexing.save_temp_indexing(row['id'], str(response['block']) + "_" + str(response['uid']))
                     else:
                         indexing.save_temp_indexing(row['id'], str(response['block']) + "_" + str(response['uid']))
-                for row in response['dataset']['train']:
-                    indexing.save(row['id'], 1)
             else:
                 random_samples = None
             response['samples'] = random_samples
@@ -115,11 +113,9 @@ def get_rewards(
         return torch.FloatTensor([0] * len(responses)).to(self.device)
     
     keys = indexing.get_all_temp_indexing_keys()
-    
     counts = {}
     try:
         for key in keys:
-            
             value = indexing.get_temp_indexing(key)
             block, uid = value.split("_")
             if uid not in counts:
@@ -129,7 +125,9 @@ def get_rewards(
             
         for i in range(len(searched_results)):
             try:
-                if spot_check_items[uids[i]]['user_id'] != searched_results[i][0]['user_id_str']:
+                spot_item = spot_check_items[uids[i]]
+                cmp_item = searched_results[i][0]
+                if check_if_tweet_valid(spot_item, cmp_item):
                     bt.logging.info("Wrong tweet!")
                     counts[str(uids[i])] = 0
                 else: 
@@ -146,3 +144,9 @@ def get_rewards(
     return torch.FloatTensor(
         [counts.get(str(response['uid']), 0) ** 2 for response in responses]  # default value of 0 if key does not exist
     ).to(self.device)
+
+
+def check_if_tweet_valid(spot_item, cmp_item):
+    if spot_item['user_id'] == cmp_item['user_id_str']:
+        return True
+    return False
