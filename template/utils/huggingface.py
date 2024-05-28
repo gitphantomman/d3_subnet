@@ -34,7 +34,7 @@ def create_hf_dataset_from_sqlite(subtensor, wallet, netuid, db_path, table_name
             traceback.print_exc()
             bt.logging.error(f"Error while committing to subtensor chain: {e}, retrying now...")
             time.sleep(5)
-    
+    # Push dataset after commit
     hf_dataset.push_to_hub(dataset_name, private=False, token=hf_token)
     print(f"Dataset {dataset_name} has been successfully uploaded to the Hugging Face Hub.")
     return url
