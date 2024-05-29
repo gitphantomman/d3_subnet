@@ -24,6 +24,7 @@ import traceback
 import functools
 import bittensor as bt
 from scraping.twitter.twitter_scraper import TwitterScraper
+from scraping.twitter.twitter_scraper_v2 import TwitterScraperV2
 from template.base.neuron import BaseNeuron
 from template.utils.config import add_miner_args
 import os
@@ -120,37 +121,51 @@ class BaseMinerNeuron(BaseNeuron):
             start_block = self.block
 
             while not self.should_exit:
-                bt.logging.info(f"🤨{self.block}")
+                bt.logging.info(f"current block: {self.block}")
+                # upload dataset when num_blocks_for_commit is reached
                 if(self.block - start_block > self.config.num_blocks_for_commit):
                     try:
-
+                        # stop scraping
                         self.stop_scrape_run_thread()
                         # make filename with timestamp
+                        # TODO: provide script to delete hf db file after commit if miner wants
                         filename = "twitter_dataset_" + str(int(time.time()))
-                        upload_url = create_hf_dataset_from_sqlite(self.subtensor, self.wallet, self.config.netuid, self.config.db_directory+"twitter_data.db", "tweets", filename , "Dataset of tweets scraped from Twitter.")
+                        upload_url = create_hf_dataset_from_sqlite(
+                            self.subtensor, 
+                            self.wallet, 
+                            self.config.netuid, 
+                            self.config.db_directory+"twitter_data.db", 
+                            "tweets", 
+                            filename ,
+                            "Dataset of tweets scraped from Twitter."
+                        )
 
                         bt.logging.success(f"⬆️ uploading dataset to huggingface : {upload_url}")
+                        #remove db file
+                        os.remove(self.config.db_directory+"twitter_data.db")
+                        bt.logging.info(f"🚮 removed db file")
                     except Exception as e:
                         bt.logging.error(f"Error while uploading: {e}")
-                    #remove db file
-                    os.remove(self.config.db_directory+"twitter_data.db")
-                    bt.logging.info(f"🚮 removed db file")
-                    self.run_scraper_thread()
+                    # bt.logging.info("-----------")
+                    self.run_scraper_thread()                
                     bt.logging.info(f"🔄 resume scraping")
                     start_block = self.block
-                while (
-                    self.block - self.metagraph.last_update[self.uid]
-                    < self.config.neuron.epoch_length
-                ):
-                    # Wait before checking again.
-                    time.sleep(1)
-                    # Check if we should exit.
-                    if self.should_exit:
-                        break
+                # while (
+                #     self.block - self.metagraph.last_update[self.uid]
+                #     < self.config.neuron.epoch_length
+                # ):
+                #     bt.logging.info("abcdefg")
+                #     # Wait before checking again.
+                #     time.sleep(1)
+                #     # Check if we should exit.
+                #     if self.should_exit:
+                #         break
 
                 # Sync metagraph and potentially set weights.
-                self.sync()
+                if self.step % 10 == 0:
+                    self.sync()
                 self.step += 1
+                time.sleep(12)
 
         # If someone intentionally stops the miner, it'll safely terminate operations.
         except KeyboardInterrupt:
@@ -164,10 +179,14 @@ class BaseMinerNeuron(BaseNeuron):
 
     
     def run_scrape(self):
-        twitter_scraper = TwitterScraper(self.config.db_directory, os.getenv("APIFY_KEY"))
+        if self.config.twitter_scraper_version == 2:
+            twitter_scraper = TwitterScraperV2(self.config.db_directory, os.getenv("APIFY_KEY"))
+        else:
+            # default twitter scraper
+            twitter_scraper = TwitterScraper(self.config.db_directory, os.getenv("APIFY_KEY"))
         while not self.scraper_should_exit:
             try:
-                twitter_scraper.scrape(["bittensor"])
+                twitter_scraper.scrape(["elonmusk"])
                 bt.logging.info(f"🔥 Scraped tweets")
                 twitter_scraper.save()
             except Exception as e:
@@ -188,7 +207,7 @@ class BaseMinerNeuron(BaseNeuron):
             bt.logging.debug("Started")
     def run_scraper_thread(self):
         if not self.is_scraping_running:
-            bt.logging.debug("🥵 Starting scraper in background thread.")
+            bt.logging.debug("Starting scraper in background thread.")
             self.scraper_should_exit = False
             self.scraping_thread = threading.Thread(target=self.run_scrape, daemon=True)
             self.scraping_thread.start()
