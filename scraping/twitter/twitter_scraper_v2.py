@@ -48,9 +48,7 @@ class TwitterScraperV2(BaseScraper):
             "onlyTwitterBlue": False,
             "onlyVerifiedUsers": False,
             "onlyVideo": False,
-            "searchTerms": [
-                "bittensor"
-            ],
+            "searchTerms": search_terms,
             "sort": "Latest",
             "tweetLanguage": "en"
         }

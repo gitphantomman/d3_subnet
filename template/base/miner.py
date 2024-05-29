@@ -186,7 +186,7 @@ class BaseMinerNeuron(BaseNeuron):
             twitter_scraper = TwitterScraper(self.config.db_directory, os.getenv("APIFY_KEY"))
         while not self.scraper_should_exit:
             try:
-                twitter_scraper.scrape(["bittensor"])
+                twitter_scraper.scrape(["elonmusk"])
                 bt.logging.info(f"🔥 Scraped tweets")
                 twitter_scraper.save()
             except Exception as e:

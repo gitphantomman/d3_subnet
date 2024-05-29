@@ -161,7 +161,7 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--scrape_interval",
         type=int,
-        default=30, # TODO: fix this 120 2min
+        default=120, # TODO: fix this 120 2min
         help="Interval in seconds to scrape data.",
     )
     # Directory to store scraped data locally for miners
@@ -175,7 +175,7 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--num_blocks_for_commit",
         type=int,
-        default=10, # TODO: fix this 200 40 min
+        default=200, # TODO: fix this 200 40 min
         help="Number of blocks to wait before committing the scraped data to the database.",
     )
 
