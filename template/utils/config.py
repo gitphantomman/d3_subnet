@@ -161,7 +161,7 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--scrape_interval",
         type=int,
-        default=120, 
+        default=30, # TODO: fix this 120 2min
         help="Interval in seconds to scrape data.",
     )
     # Directory to store scraped data locally for miners
@@ -175,8 +175,15 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--num_blocks_for_commit",
         type=int,
-        default=200,
+        default=10, # TODO: fix this 200 40 min
         help="Number of blocks to wait before committing the scraped data to the database.",
+    )
+
+    parser.add_argument(
+        "--twitter_scraper_version",
+        type=int,
+        default=2,
+        help="Version of the Twitter scraper to use.",
     )
     
     parser.add_argument(

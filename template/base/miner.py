@@ -24,6 +24,7 @@ import traceback
 import functools
 import bittensor as bt
 from scraping.twitter.twitter_scraper import TwitterScraper
+from scraping.twitter.twitter_scraper_v2 import TwitterScraperV2
 from template.base.neuron import BaseNeuron
 from template.utils.config import add_miner_args
 import os
@@ -140,11 +141,12 @@ class BaseMinerNeuron(BaseNeuron):
                         )
 
                         bt.logging.success(f"⬆️ uploading dataset to huggingface : {upload_url}")
+                        #remove db file
+                        os.remove(self.config.db_directory+"twitter_data.db")
+                        bt.logging.info(f"🚮 removed db file")
                     except Exception as e:
                         bt.logging.error(f"Error while uploading: {e}")
-                    #remove db file
-                    os.remove(self.config.db_directory+"twitter_data.db")
-                    bt.logging.info(f"🚮 removed db file")
+                    # bt.logging.info("-----------")
                     self.run_scraper_thread()                
                     bt.logging.info(f"🔄 resume scraping")
                     start_block = self.block
@@ -177,7 +179,11 @@ class BaseMinerNeuron(BaseNeuron):
 
     
     def run_scrape(self):
-        twitter_scraper = TwitterScraper(self.config.db_directory, os.getenv("APIFY_KEY"))
+        if self.config.twitter_scraper_version == 2:
+            twitter_scraper = TwitterScraperV2(self.config.db_directory, os.getenv("APIFY_KEY"))
+        else:
+            # default twitter scraper
+            twitter_scraper = TwitterScraper(self.config.db_directory, os.getenv("APIFY_KEY"))
         while not self.scraper_should_exit:
             try:
                 twitter_scraper.scrape(["bittensor"])
