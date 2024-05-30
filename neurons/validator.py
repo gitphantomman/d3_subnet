@@ -21,17 +21,16 @@
 import time
 import bittensor as bt
 from datasets import load_dataset
-import indexing
+
 from bittensor import logging
 
 import os
 from dotenv import load_dotenv
-# Bittensor Validator Template:
-from template.validator import forward
+from common.validator import forward
 
 # import base validator class which takes care of most of the boilerplate
-from template.base.validator import BaseValidatorNeuron
-
+from common.base.validator import BaseValidatorNeuron
+from common.utils import indexing
 load_dotenv()
 
 
@@ -43,7 +42,7 @@ def sync_last_indexed():
         batch_size = 10000
         total_rows = 0
         indexed_cnt = 0
-        last_indexed = indexing.get(f"{repo_id}:last", None)
+        # last_indexed = indexing.get(f"{repo_id}:last", None)
 
         for row in dataset:
             pipeline.setnx(row['id'], 1)
@@ -68,9 +67,10 @@ def sync_last_indexed():
         last_indexed = dataset[-1]['id']
         flag_key = f"{repo_id}:last"
         indexing.r.set(flag_key, last_indexed)
-        logging.success(f"Successfully indexed the dataset. Last indexed key: {flag_key}")
+        logging.success(f"Successfully indexed the dataset. Last indexed key: {flag_key} : {last_indexed}")
     except Exception as e:
         logging.error(f"Failed to index the dataset: {e}")
+        exit(1)
 
 
 
@@ -99,7 +99,6 @@ class Validator(BaseValidatorNeuron):
         - Rewarding the miners
         - Updating the scores
         """
-        # TODO(developer): Rewrite this function based on your protocol definition.
         return await forward(self)
 
 
@@ -108,4 +107,4 @@ if __name__ == "__main__":
     with Validator() as validator:
         while True:
             bt.logging.info(f"Current block: {validator.subtensor.block} at {time.time()}")
-            time.sleep(5)
+            time.sleep(10)

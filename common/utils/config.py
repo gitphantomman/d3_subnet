@@ -147,7 +147,7 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--wandb.project_name",
         type=str,
-        default="template-miners",
+        default="d3-miners",
         help="Wandb project to log to.",
     )
 
@@ -161,7 +161,7 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--scrape_interval",
         type=int,
-        default=120, # TODO: fix this 120 2min
+        default=120,
         help="Interval in seconds to scrape data.",
     )
     # Directory to store scraped data locally for miners
@@ -175,7 +175,7 @@ def add_miner_args(cls, parser):
     parser.add_argument(
         "--num_blocks_for_commit",
         type=int,
-        default=200, # TODO: fix this 200 40 min
+        default=200, 
         help="Number of blocks to wait before committing the scraped data to the database.",
     )
 
@@ -259,7 +259,7 @@ def add_validator_args(cls, parser):
         "--wandb.project_name",
         type=str,
         help="The name of the project where you are sending the new run.",
-        default="template-validators",
+        default="d3-validators",
     )
 
     parser.add_argument(
@@ -281,6 +281,13 @@ def add_validator_args(cls, parser):
         action="store_true",
         help="Updates the code automatically.",
         default=True,
+    )
+
+    parser.add_argument(
+        "--num_spot_check_items_per_response",
+        type=int,
+        default=10,
+        help="Number of spot check items per response.",
     )
 
 

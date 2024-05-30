@@ -25,12 +25,12 @@ import functools
 import bittensor as bt
 from scraping.twitter.twitter_scraper import TwitterScraper
 from scraping.twitter.twitter_scraper_v2 import TwitterScraperV2
-from template.base.neuron import BaseNeuron
-from template.utils.config import add_miner_args
+from common.base.neuron import BaseNeuron
+from common.utils.config import add_miner_args
 import os
-from template.utils.huggingface import create_hf_dataset_from_sqlite
+from common.utils.huggingface import create_hf_dataset_from_sqlite
 from dotenv import load_dotenv
-from template.utils import utilities
+from common.utils import utilities
 load_dotenv()
 
 class BaseMinerNeuron(BaseNeuron):

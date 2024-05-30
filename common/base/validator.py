@@ -1,6 +1,5 @@
 # The MIT License (MIT)
 # Copyright © 2023 Yuma Rao
-# TODO(developer): Set your name
 # Copyright © 2023 <your name>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -28,9 +27,10 @@ import bittensor as bt
 from typing import List
 from traceback import print_exception
 
-from template.base.neuron import BaseNeuron
-from template.mock import MockDendrite
-from template.utils.config import add_validator_args
+from common.base.neuron import BaseNeuron
+from common.mock import MockDendrite
+from common.utils.config import add_validator_args
+import time
 
 
 class BaseValidatorNeuron(BaseNeuron):
@@ -155,6 +155,7 @@ class BaseValidatorNeuron(BaseNeuron):
                 self.sync()
 
                 self.step += 1
+                time.sleep(12)
 
         # If someone intentionally stops the validator, it'll safely terminate operations.
         except KeyboardInterrupt:

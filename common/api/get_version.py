@@ -19,18 +19,18 @@
 
 import bittensor as bt
 from typing import List, Optional, Union, Any, Dict
-from template.protocol import Dummy
+from common.protocol import Version
 from bittensor.subnets import SubnetsAPI
 
 
-class DummyAPI(SubnetsAPI):
+class VersionAPI(SubnetsAPI):
     def __init__(self, wallet: "bt.wallet"):
         super().__init__(wallet)
-        self.netuid = 33
-        self.name = "dummy"
+        self.netuid = 18
+        self.name = "version"
 
-    def prepare_synapse(self, dummy_input: int) -> Dummy:
-        synapse.dummy_input = dummy_input
+    def prepare_synapse(self) -> Version:
+        synapse = Version()
         return synapse
 
     def process_responses(
@@ -40,5 +40,5 @@ class DummyAPI(SubnetsAPI):
         for response in responses:
             if response.dendrite.status_code != 200:
                 continue
-            return outputs.append(response.dummy_output)
+            return outputs.append(response.version)
         return outputs
