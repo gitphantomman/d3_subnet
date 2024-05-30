@@ -46,12 +46,11 @@ def sync_last_indexed():
 
         for row in dataset:
             pipeline.setnx(row['id'], 1)
-            total_rows += 1
-
             if total_rows % batch_size == 0:
                 try:
+                    print("1")
                     indexed_results = pipeline.execute()
-                    indexed_cnt += sum(indexed_results)
+                    indexed_cnt += sum(indexed_results) 
                 except Exception as e:
                     logging.error(f"Failed to index the dataset: {e}")
                     continue
