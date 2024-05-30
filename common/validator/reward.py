@@ -23,6 +23,7 @@ from datasets import load_dataset
 import bittensor as bt
 import neurons.indexing as indexing
 from scraping.twitter import twitter_scraper
+from datetime import datetime
 from scraping.twitter import twitter_scraper_v2
 import os
 from dotenv import load_dotenv
@@ -88,6 +89,7 @@ def get_rewards(
                 all_spot_check_urls.append(response['random_samples_for_spotcheck']['url'])
                 valid_uid_list.append(response['uid'])
                 # check samples already indexed and calculate the number of new rows
+                timestamp_sum = 0
                 for row in response['random_samples']:
                     already_indexed = indexing.get_temp_indexing(row['id'])
                     if indexing.get(row['id']) is not None:
@@ -98,6 +100,9 @@ def get_rewards(
                     else:
                         indexing.save_temp_indexing(row['id'], str(response['block']) + "_" + str(response['uid']))
                     indexing.save(row['id'], 1)
+                    timestamp_sum += to_timestamp(row['created_at'])
+                average_timestamp = timestamp_sum / len(response['random_samples'])
+                bt.logging.info(f"average_timestamp: {average_timestamp}")
             else:
                 response['random_samples'] = None
     except Exception as e:
@@ -130,9 +135,6 @@ def get_rewards(
              
                 except Exception as e:
                     cnt += 1
-                    print(item)
-                    print("------------")
-                    print(cmp_item)
                     bt.logging.error(f"Failed to compare spot check items: {e}")
         if cnt >= int(self.config.num_spot_check_items_per_response / 2):
             responses[uid]['real_num_rows'] = 0
@@ -145,3 +147,13 @@ def get_rewards(
         [response['real_num_rows'] ** 2 for response in responses]
     ).to(self.device)
 
+def to_timestamp(date_string:str):
+    # Define the format of the date string
+    date_format = "%a %b %d %H:%M:%S %z %Y"
+
+    # Parse the string into a datetime object
+    date_object = datetime.strptime(date_string, date_format)
+
+    # Convert the datetime object to a timestamp
+    timestamp = date_object.timestamp()
+    return timestamp

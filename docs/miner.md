@@ -11,19 +11,23 @@ If data overlaps, the miner who commits first wins, so miners must commit as muc
 ## Mining Requirements
 
 Miners must have adequate disk space to temporarily store data in SQLite format before committing it.
-It is recommended to have at least 20GB of disk space.
-
-Also, miners will need apify API token for scraping. (https://console.apify.com/billing/subscription)
+It is recommended to have at least 30GB of disk space.
 
 ## Configuration
 
 Please create a `.env` file based on the `.env.example` template.
 
 ```python
-TwitterScraperActorId=
+TwitterScraperActorId=heLL6fUofdPgRXZie
+TwitterScraperV2ActorId=61RPP7dywgiy0JPD0
 APIFY_KEY=
 HF_TOKEN=
+MAIN_REPO_ID=bittensor-dataset/twitter-text-dataset
 ```
+You require an Apify API key to scrape tweets or other data. (Please upgrade your apify key plan here: https://console.apify.com/billing/subscription?openSubscriptionWizard=1)
+
+Additionally, you need a write-access token from Huggingface to publish your own dataset. (You can get your token from here: https://huggingface.co/settings/tokens)
+
 Please configure the miner by completing the `.env` file.
 
 ## Running Miner
@@ -51,3 +55,4 @@ python neurons/miner.py --subtensor.network finney --netuid 10 --wallet.name def
 -    `--scrape_interval`: Set the time interval (in seconds) for scraping operations.
 -    `--db_directory`: Indicate the local directory path for storing temporary data sets.
 -    `--auto_update`: If this is True, miners will update their repo automatically. The default config value is `False`.
+-    `--twitter_scraper_version`: Version of Twitter Scraper to user in apify.

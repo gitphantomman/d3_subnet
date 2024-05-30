@@ -53,7 +53,7 @@ async def forward(self):
                 partial = functools.partial(bt.extrinsics.serving.get_metadata, self.subtensor, self.config.netuid, miner['hotkey'])
                 metadata = run_in_subprocess(partial, 30)
 
-                if self.subtensor.block - metadata['block'] > 300: 
+                if self.subtensor.block - metadata['block'] < 300: # TODO: 
                     response = Response(commit=None, dataset=None, num_rows=0, uid=miner['uid'], block = None, real_num_rows = 0, wrong_tweet_exist = False)
                     responses.append(response)
                 else:

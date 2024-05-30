@@ -18,6 +18,14 @@ The D3 Subnet, standing for *`Decentralized Distributed Data`* Scraping subnet, 
 
 We're building **[Bittensor Dataset Hub](https://huggingface.co/bittensor-dataset)**.
 
+##  what makes this different from other scraping subnets?
+
+The purpose of the d3_subnet is to generate the training datasets essential for Bittensor’s AI models. To achieve this, we have implemented a novel mechanism that rapidly constructs diverse datasets without duplication.
+
+We replaced the traditional synapse-based method with Subtensor’s commit function, allowing miners to submit their scraped data at any time without restrictions. This increases competitiveness, as only the top miners receive incentives. This prevented one person from receiving rewards by occupying multiple slots with the same data, as in previous mechanisms.
+
+We will work closely with other subnets to create the best query datasets in the shortest amount of time.
+
 ## Incentive Mechanism
 
 Miners within the D3 Subnet are assessed based on the volume of unique data they contribute to the network, excluding any duplicates. To excel, miners are encouraged to gather as much data as possible, commit their findings as fast and frequently as possible to the blockchain.
@@ -26,13 +34,21 @@ To ensure the accuracy of data counts while eliminating duplicates, validators r
 
 The owner collects all the data of network downloading dataset from miners' commits and using the indexing table similar to validators.
 
+## Our Roadmap
+
+- Decentralization: Finding solutions to fully decentralize the centralized services currently used for scraping.
+- Fair Incentive Evaluation: Addressing the issue of fair incentive evaluation for miners post-launch.
+- Expanded Datasets: Enhancing our dataset to include not only text and images from Twitter but also video and audio datasets.
+- Collaboration for Training Datasets: Partnering with other AI model training subnets to produce the training datasets required for Bittensor.
+- Website Launch: Launching a website to showcase the usefulness of our data and its applications, highlighting the appeal of Bittensor to a broader audience beyond our platform.
+
 ## Getting Started
 
 ### Clone the repository from github
 
 ```bash
-git clone https://github.com/gitphantomman/scraping_subnet_new.git
-cd scraping_subnet_new
+git clone git@github.com:gitphantomman/d3_subnet.git
+cd d3_subnet
 ```
 
 ### Install python virtual environment
