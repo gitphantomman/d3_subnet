@@ -130,9 +130,6 @@ def get_rewards(
              
                 except Exception as e:
                     cnt += 1
-                    print(item)
-                    print("------------")
-                    print(cmp_item)
                     bt.logging.error(f"Failed to compare spot check items: {e}")
         if cnt >= int(self.config.num_spot_check_items_per_response / 2):
             responses[uid]['real_num_rows'] = 0
