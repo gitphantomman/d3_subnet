@@ -67,9 +67,9 @@ setup_environment() {
     # Update to the nightly version of rust
     ./scripts/init.sh
 
-    cd ../bittensor-subnet-template
+    cd ../d3_subnet
 
-    # Install the bittensor-subnet-template python package
+    # Install the bittensor-d3-subnet python package
     python -m pip install -e .
 
     # Create and set up wallets
@@ -89,7 +89,7 @@ setup_environment() {
 setup_environment 
 
 ## Setup localnet
-# assumes we are in the bittensor-subnet-template/ directory
+# assumes we are in the bittensor-d3_subnet/ directory
 # Initialize your local subtensor chain in development mode. This command will set up and run a local subtensor network.
 cd ../subtensor
 
@@ -125,7 +125,7 @@ btcli subnet list --subtensor.chain_endpoint ws://127.0.0.1:9946
 btcli wallet overview --wallet.name validator --subtensor.chain_endpoint ws://127.0.0.1:9946 --no_prompt
 btcli wallet overview --wallet.name miner --subtensor.chain_endpoint ws://127.0.0.1:9946 --no_prompt
 
-cd ../bittensor-subnet-template
+cd ../d3_subnet
 
 
 # Check if inside a tmux session

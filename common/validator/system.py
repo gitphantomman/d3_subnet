@@ -7,6 +7,13 @@ class Response(tp.TypedDict):
     commit: str
     dataset: tp.Any
     num_rows: int
+    uid: int    
+    block:int
+    num_samples: int = 0
+    real_num_rows: int = 0
+    random_samples: tp.Any = None
+    random_samples_for_spotcheck: tp.Any = None 
+    wrong_tweet_exist: bool = False
 
 
 def reward(responses: tp.List[Response]) -> tp.Any:

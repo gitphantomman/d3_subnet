@@ -1,6 +1,5 @@
 # The MIT License (MIT)
 # Copyright © 2023 Yuma Rao
-# TODO(developer): Set your name
 # Copyright © 2023 <your name>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -18,14 +17,11 @@
 # DEALINGS IN THE SOFTWARE.
 
 import bittensor as bt
-from template.utils.utilities import functools, run_in_subprocess
-from template.protocol import Dummy
-from template.validator.reward import get_rewards
-from template.utils.uids import get_random_uids, get_all_uids
-from bittensor import logging
-import os
-from datasets import load_dataset
-import indexing
+from common.utils.utilities import functools, run_in_subprocess
+from common.validator.reward import get_rewards
+from common.utils.uids import get_all_uids
+from common.validator.system import Response
+
 
 
 async def forward(self):
@@ -39,6 +35,7 @@ async def forward(self):
 
     """
     if self.subtensor.block - self.last_block > self.config.num_blocks_for_validation:
+        self.last_block = self.subtensor.block
         miners = get_all_uids(self)
         bt.logging.success("validator is getting commits from all miners")
         # get all miners from the metagraph
@@ -55,19 +52,20 @@ async def forward(self):
                 bt.logging.success(f"Got the latest commit from miner {miner['uid']}")
                 partial = functools.partial(bt.extrinsics.serving.get_metadata, self.subtensor, self.config.netuid, miner['hotkey'])
                 metadata = run_in_subprocess(partial, 30)
-                if self.subtensor.block - metadata['block'] > 300:
-                    responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': None, 'block': None})
-                # print(f"latest_commit: {latest_commit} block: {metadata['block']}")
+
+                if self.subtensor.block - metadata['block'] > 300: 
+                    response = Response(commit=None, dataset=None, num_rows=0, uid=miner['uid'], block = None, real_num_rows = 0, wrong_tweet_exist = False)
+                    responses.append(response)
                 else:
-                    responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': latest_commit, 'block': metadata['block']})
-                # responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': latest_commit, 'block': metadata['block']})
+                    response = Response(commit=latest_commit, dataset=None, num_rows=0, uid=miner['uid'], block = metadata['block'], real_num_rows = 0, wrong_tweet_exist = False)
+                    responses.append(response)
+                
             except Exception as e:
-                bt.logging.error(f"failed to get metadata from miner {miner['uid']}")
-                responses.append({'uid': miner['uid'], 'hotkey': miner['hotkey'], 'commit': None, 'block': None})
+                bt.logging.debug(f"failed to get metadata from miner {miner['uid']}")
+                response = Response(commit=None, dataset=None, num_rows=0, uid=miner['uid'], block = None, real_num_rows = 0, wrong_tweet_exist = False)
+                responses.append(response)
                 continue
-        bt.logging.success("Got all commits from miners")
         rewards = get_rewards(self, responses=responses)
-        self.last_block = self.subtensor.block
         bt.logging.info(f"Scored responses: {rewards}")
         # Update the scores based on the rewards. You may want to define your own update_scores function for custom behavior.
         self.update_scores(rewards, miner_uids)
