@@ -13,6 +13,7 @@ import sqlite3
 
 # load_dotenv()
 
+
 class TwitterScraperV3(BaseScraper):
 
     def __init__(
@@ -20,7 +21,8 @@ class TwitterScraperV3(BaseScraper):
         save_path="data/",
         limit=1,
         kv=None,
-        csvPath="twacc.csv",
+        filePath="twacc.txt",
+        fileHeaderFormat="username:password:email:email_password",
         saveToJsonFile=True
     ):
         super().__init__(save_path)
@@ -28,34 +30,13 @@ class TwitterScraperV3(BaseScraper):
 
         self.api = API()  # or API("path-to.db") - default is `accounts.db`
 
-        self.df = self.read_csv_file(csvPath)
+        self.filePath = filePath
+        self.fileHeaderFormat = fileHeaderFormat
 
         self.fetchedTweets:list[Tweet] = []
         self.limit = limit
         self.kv = kv
         self.saveToJsonFile = saveToJsonFile
-    
-    def read_csv_file(self, file_path):
-        """
-        Read csv file and convert to pandas DataFrame
-
-        Args:
-            file_path (string): csv path file
-
-        Returns:
-            pandas DataFrame: csv data with format of type pandas
-        """
-        try:
-            # Read CSV file using pyarrow and convert to pandas DataFrame
-            table = pv.read_csv(file_path).to_pandas()
-            logging.info(f"{file_path} file read successfully!")
-            return table
-        except FileNotFoundError as e:
-            logging.error(f"FileNotFoundError: {e}")
-            raise
-        except Exception as e:
-            logging.error(f"An unexpected error occurred: {e}")
-            raise
 
     async def scrape(self, search_terms=["bittensor"]):
         """
@@ -66,12 +47,7 @@ class TwitterScraperV3(BaseScraper):
             data (any): The scraped data from Twitter.
         """
 
-        # Print the first few rows of the DataFrame
-        for row in self.df.itertuples(index=False):
-            await self.api.pool.add_account(
-                row.x_user, row.x_password, row.x_email, row.x_email_password
-            )
-
+        await self.api.pool.load_from_file(filepath=self.filePath, line_format=self.fileHeaderFormat)
         await self.api.pool.login_all()
         logging.info(f"Scraping data from Twitter.")
 
@@ -110,6 +86,8 @@ class TwitterScraperV3(BaseScraper):
             file = "scraped_" + nowStr + ".json"
             with open(file, "w", encoding="utf-8") as f:
                 json.dump(jsons, f, ensure_ascii=False, indent=4)
+
+            logging.info(f"✅ Saved data to {self.save_path + "/" + file}")
         else:        
             file = 'scraped_twitter_data.db'
             
