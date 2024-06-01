@@ -1,17 +1,17 @@
 import logging
 from scraper import BaseScraper
-from twscrape import API
+import pyarrow.csv as pv
+from twscrape import API, Tweet
 import json
 import os
-import re
+import datetime
+import sqlite3
 
 # from dotenv import load_dotenv
 # import asyncio
-# import os
 
 
 # load_dotenv()
-
 
 class TwitterScraperV3(BaseScraper):
 
@@ -20,25 +20,42 @@ class TwitterScraperV3(BaseScraper):
         save_path="data/",
         limit=1,
         kv=None,
-        user=None,
-        password=None,
-        email=None,
-        email_password=None,
+        csvPath="twacc.csv",
+        saveToJsonFile=True
     ):
         super().__init__(save_path)
         logging.basicConfig(level=logging.INFO)
 
         self.api = API()  # or API("path-to.db") - default is `accounts.db`
 
-        self.user = user
-        self.password = password
-        self.email = email
-        self.email_password = email_password
+        self.df = self.read_csv_file(csvPath)
 
-        self.fetched_items = []
-        self.search_terms = ""
+        self.fetchedTweets:list[Tweet] = []
         self.limit = limit
         self.kv = kv
+        self.saveToJsonFile = saveToJsonFile
+    
+    def read_csv_file(self, file_path):
+        """
+        Read csv file and convert to pandas DataFrame
+
+        Args:
+            file_path (string): csv path file
+
+        Returns:
+            pandas DataFrame: csv data with format of type pandas
+        """
+        try:
+            # Read CSV file using pyarrow and convert to pandas DataFrame
+            table = pv.read_csv(file_path).to_pandas()
+            logging.info(f"{file_path} file read successfully!")
+            return table
+        except FileNotFoundError as e:
+            logging.error(f"FileNotFoundError: {e}")
+            raise
+        except Exception as e:
+            logging.error(f"An unexpected error occurred: {e}")
+            raise
 
     async def scrape(self, search_terms=["bittensor"]):
         """
@@ -48,22 +65,21 @@ class TwitterScraperV3(BaseScraper):
         Returns:
             data (any): The scraped data from Twitter.
         """
-        self.search_terms = search_terms[0]
 
-        await self.api.pool.add_account(
-            self.user, self.password, self.email, self.email_password
-        )
+        # Print the first few rows of the DataFrame
+        for row in self.df.itertuples(index=False):
+            await self.api.pool.add_account(
+                row.x_user, row.x_password, row.x_email, row.x_email_password
+            )
+
         await self.api.pool.login_all()
-        logging.info(f"Scraping data from Twitter with 👤: [{self.user}].")
+        logging.info(f"Scraping data from Twitter.")
 
-        # NOTE 1: gather is a helper function to receive all data as list, FOR can be used as well:
-        async for tweet in self.api.search(
-            self.search_terms, self.limit, self.kv
-        ):  # list[Tweet]
-            tweet.dict()
-            self.fetched_items.append(
-                json.loads(tweet.json())
-            )  # tweet is `Tweet` object
+        for q in search_terms:
+            # get list[Tweet]
+            async for tweet in self.api.search(q, self.limit, self.kv):
+                 # tweet is `Tweet` object
+                self.fetchedTweets.append(tweet)
 
         logging.info(f"✅ Scraped.")
 
@@ -75,26 +91,75 @@ class TwitterScraperV3(BaseScraper):
             data (any): The data to be saved.
         """
 
-        if os.path.exists(self.save_path) == False:
+        # if not exists then mkdir it
+        if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
+
+        # cd to path
         os.chdir(self.save_path)
 
-        file = re.sub(r"\s+", "_", self.search_terms) + ".json"
-        with open(file, "w", encoding="utf-8") as f:
-            json.dump(self.fetched_items, f, ensure_ascii=False, indent=4)
+        file = ""
 
-        logging.info(f"✅ Saved data to {self.save_path + "/" + file}")
+        if (self.saveToJsonFile):
+            jsons = []
+            for tweet in self.fetchedTweets:
+                tweet.dict()
+                jsons.append(json.loads(tweet.json()))
+
+            nowStr = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            file = "scraped_" + nowStr + ".json"
+            with open(file, "w", encoding="utf-8") as f:
+                json.dump(jsons, f, ensure_ascii=False, indent=4)
+        else:        
+            file = 'scraped_twitter_data.db'
+            
+            try:
+                # Connect to SQLite database (or create it if it doesn't exist)
+                self.conn = sqlite3.connect(file)
+
+                # Create a cursor object
+                c = self.conn.cursor()
+
+                # Execute SQL DROP TABLE statement
+                c.execute("DROP TABLE IF EXISTS tweets")
+
+                # Create table if it doesn't exist
+                c.execute('''CREATE TABLE IF NOT EXISTS tweets
+                                (id INTEGER PRIMARY KEY, tweet_content TEXT, url TEXT, date TIMESTAMP, replyCount INTEGER, retweetCount INTEGER, likeCount INTEGER, quoteCount INTEGER, viewCount INTEGER, user_id INTEGER, scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+
+                # Insert fetched items into the database
+                for tweet in self.fetchedTweets:
+                    # Inserting or ignoring on conflict to avoid duplicates
+                    c.execute(
+                        '''INSERT OR IGNORE INTO tweets (id, tweet_content, url, date, replyCount, retweetCount, likeCount, quoteCount, viewCount, user_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                        (tweet.id, tweet.rawContent, tweet.url, tweet.date, tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount, tweet.viewCount, tweet.user.id))
+
+                # Commit the changes
+                self.conn.commit()
+
+                logging.info(f"✅ Saved data to {self.save_path + "/" + file}")
+
+                # # Query the database
+                # c.execute("SELECT * FROM tweets")
+
+                # # Fetch all results and Print the results
+                # for row in c.fetchall():
+                #     print('=====', row)
+
+            except Exception as e:
+                logging.error(f"Error occurred: {e}")
+                # Rollback the transaction
+                self.conn.rollback()
+
+            finally:
+                # Close the connection
+                self.conn.close()
 
 
 # if __name__ == "__main__":
 #     twitter_scraper = TwitterScraperV3(
-#         "data",
-#         1,
-#         {"product": "Top"},
-#         os.getenv("x_user"),
-#         os.getenv("x_password"),
-#         os.getenv("x_email"),
-#         os.getenv("x_email_password"),
+#         save_path="data", limit=1, kv={"product": "Top"}, saveToJsonFile=False
 #     )
 #     asyncio.run(twitter_scraper.scrape(["elon musk"]))
 #     twitter_scraper.save()
