@@ -120,8 +120,8 @@ class TwitterScraperV3(BaseScraper):
                 # Create a cursor object
                 c = self.conn.cursor()
 
-                # Execute SQL DROP TABLE statement
-                c.execute("DROP TABLE IF EXISTS tweets")
+                # # Execute SQL DROP TABLE statement
+                # c.execute("DROP TABLE IF EXISTS tweets")
 
                 # Create table if it doesn't exist
                 c.execute('''CREATE TABLE IF NOT EXISTS tweets
