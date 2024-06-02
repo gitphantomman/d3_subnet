@@ -186,11 +186,6 @@ class TwitterQueryBuilder:
         self.__query.append(f"(@{word})")
         return self
 
-    def mentionAccount(self, word=""):
-        # elon => (@elon)
-        self.__query.append(f"(@{word})")
-        return self
-
     def fromDate(self, _date=datetime.date):
         # 2024-01-01 => since:2024-02-01
         self.__query.append(f"since:{_date.strftime("%Y-%m-%d")}")
