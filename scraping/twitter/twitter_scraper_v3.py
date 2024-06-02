@@ -103,15 +103,16 @@ class TwitterScraperV3(BaseScraper):
 
                 # Create table if it doesn't exist
                 c.execute('''CREATE TABLE IF NOT EXISTS tweets
-                                (id INTEGER PRIMARY KEY, tweet_content TEXT, url TEXT, date TIMESTAMP, replyCount INTEGER, retweetCount INTEGER, likeCount INTEGER, quoteCount INTEGER, viewCount INTEGER, user_id INTEGER, scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+                                (id TEXT PRIMARY KEY, tweet_content TEXT, user_name TEXT, user_id TEXT, created_at TIMESTAMP, url TEXT, favourite_count INT, scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, image_urls TEXT)''')
 
                 # Insert fetched items into the database
                 for tweet in self.fetchedTweets:
+                    imgUrls = [photo.url for photo in tweet.media.photos]
                     # Inserting or ignoring on conflict to avoid duplicates
                     c.execute(
-                        '''INSERT OR IGNORE INTO tweets (id, tweet_content, url, date, replyCount, retweetCount, likeCount, quoteCount, viewCount, user_id)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                        (tweet.id, tweet.rawContent, tweet.url, tweet.date, tweet.replyCount, tweet.retweetCount, tweet.likeCount, tweet.quoteCount, tweet.viewCount, tweet.user.id))
+                        '''INSERT OR IGNORE INTO tweets (id, tweet_content, user_name, user_id, created_at, url, favourite_count, image_urls)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                        (tweet.id, tweet.rawContent, tweet.user.username, tweet.user.id, tweet.date, tweet.url, tweet.likeCount, str(imgUrls)))
 
                 # Commit the changes
                 self.conn.commit()
@@ -135,9 +136,90 @@ class TwitterScraperV3(BaseScraper):
                 self.conn.close()
 
 
+class TwitterQueryBuilder:
+    def __init__(self):
+        self.__query = []
+
+    def tweetUrl(self, url=""):
+        # https://x.com/alertarojanot/status/1797051547311829246 => https://x.com/{username}/status/{tweetId}
+        tweetUrl = url.split("/")[-3:]
+        # username = tweetUrl[-3]
+        tweetId = tweetUrl[-1]
+        return self.tweetId(tweetId)
+
+    def tweetId(self, tweetId=""):
+        # tweetId: number
+        return self.words(tweetId)
+
+    def words(self, word=""):
+        # cats dogs => cats dogs
+        self.__query.append(word)
+        return self
+
+    def exactWords(self, word=""):
+        # cats dogs => "cats dogs"
+        self.__query.append(f"\"{word}\"")
+        return self
+
+    def anyWords(self, word=""):
+        # cats dogs => (cats OR dogs)
+        self.__query.append(f"({self.__multiWords(word)})")
+        return self
+
+    def hashtags(self, word=""):
+        # cats dogs => (#cats OR #dogs)
+        self.__query.append(f"({self.__multiWords(word, "#")})")
+        return self
+
+    def fromAccount(self, word=""):
+        # elon => (from:elon)
+        self.__query.append(f"(from:{word})")
+        return self
+
+    def toAccount(self, word=""):
+        # elon => (to:elon)
+        self.__query.append(f"(to:{word})")
+        return self
+
+    def mentionAccount(self, word=""):
+        # elon => (@elon)
+        self.__query.append(f"(@{word})")
+        return self
+
+    def mentionAccount(self, word=""):
+        # elon => (@elon)
+        self.__query.append(f"(@{word})")
+        return self
+
+    def fromDate(self, _date=datetime.date):
+        # 2024-01-01 => since:2024-02-01
+        self.__query.append(f"since:{_date.strftime("%Y-%m-%d")}")
+        return self
+
+    def toDate(self, _date=datetime.date):
+        # 2024-01-01 => until:2024-01-01
+        self.__query.append(f"until:{_date.strftime("%Y-%m-%d")}")
+        return self
+
+    def build(self):
+        return " ".join(self.__query)
+    
+    def __multiWords(self, word="", prefix=None):
+        return ' OR '.join([f"{prefix}{str}" for str in word.split(' ')])
+    
+
 # if __name__ == "__main__":
 #     twitter_scraper = TwitterScraperV3(
 #         save_path="data", limit=1, kv={"product": "Top"}, saveToJsonFile=False
 #     )
-#     asyncio.run(twitter_scraper.scrape(["elon musk"]))
+#     asyncio.run(
+#         twitter_scraper.scrape(
+#             [
+#                 TwitterQueryBuilder()
+#                 .anyWords("elon musk")
+#                 .fromDate(datetime.date(2024, 1, 1))
+#                 .build()
+#             ]
+#         )
+#     )
 #     twitter_scraper.save()
