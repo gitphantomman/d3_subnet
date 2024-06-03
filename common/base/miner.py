@@ -25,6 +25,7 @@ import functools
 import bittensor as bt
 from scraping.twitter.twitter_scraper import TwitterScraper
 from scraping.twitter.twitter_scraper_v2 import TwitterScraperV2
+from scraping.twitter.twitter_scraper_v3 import TwitterScraperV3
 from common.base.neuron import BaseNeuron
 from common.utils.config import add_miner_args
 import os
@@ -179,7 +180,9 @@ class BaseMinerNeuron(BaseNeuron):
 
     
     def run_scrape(self):
-        if self.config.twitter_scraper_version == 2:
+        if self.config.twitter_scraper_version == 3:
+            twitter_scraper = TwitterScraperV3(self.config.db_directory)
+        elif self.config.twitter_scraper_version == 2:
             twitter_scraper = TwitterScraperV2(self.config.db_directory, os.getenv("APIFY_KEY"))
         else:
             # default twitter scraper
