@@ -1,6 +1,5 @@
 # The MIT License (MIT)
 # Copyright © 2023 Yuma Rao
-# TODO(developer): Set your name
 # Copyright © 2023 <your name>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -27,6 +26,7 @@ from bittensor import logging
 import os
 from dotenv import load_dotenv
 from common.validator import forward
+import traceback
 
 # import base validator class which takes care of most of the boilerplate
 from common.base.validator import BaseValidatorNeuron
@@ -46,9 +46,9 @@ def sync_last_indexed():
 
         for row in dataset:
             pipeline.setnx(row['id'], 1)
+            total_rows += 1
             if total_rows % batch_size == 0:
                 try:
-                    print("1")
                     indexed_results = pipeline.execute()
                     indexed_cnt += sum(indexed_results) 
                 except Exception as e:

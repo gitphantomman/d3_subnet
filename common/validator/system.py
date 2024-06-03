@@ -14,7 +14,8 @@ class Response(tp.TypedDict):
     random_samples: tp.Any = None
     random_samples_for_spotcheck: tp.Any = None 
     wrong_tweet_exist: bool = False
-
+    average_timestamp: float = 0.0
+    rank_up_to_date: int = 0
 
 def reward(responses: tp.List[Response]) -> tp.Any:
     """

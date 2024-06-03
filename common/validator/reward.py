@@ -101,8 +101,7 @@ def get_rewards(
                         indexing.save_temp_indexing(row['id'], str(response['block']) + "_" + str(response['uid']))
                     indexing.save(row['id'], 1)
                     timestamp_sum += to_timestamp(row['created_at'])
-                average_timestamp = timestamp_sum / len(response['random_samples'])
-                bt.logging.info(f"average_timestamp: {average_timestamp}")
+                response['average_timestamp'] = timestamp_sum / len(response['random_samples'])
             else:
                 response['random_samples'] = None
     except Exception as e:
@@ -116,6 +115,15 @@ def get_rewards(
         value = indexing.get_temp_indexing(key)
         block, uid = value.split("_")
         responses[int(uid)]['real_num_rows'] += 1
+
+    # check timestamp
+    for i, uid in enumerate(valid_uid_list):
+        # rank valid_uid_list by average_timestamp
+        for j in range(i+1, len(valid_uid_list)):
+            if responses[uid]['average_timestamp'] < responses[valid_uid_list[j]]['average_timestamp']:
+                valid_uid_list[i], valid_uid_list[j] = valid_uid_list[j], valid_uid_list[i]
+    
+
     for i, uid in enumerate(valid_uid_list):
         cnt = 0
         
@@ -128,9 +136,9 @@ def get_rewards(
                 try:
                     if item['id'] == cmp_item['id']:
                         if item['tweet_content'] != cmp_item['text']:
+                            cnt += 1
                             print("Wrong tweet!")
                         else:
-                            cnt += 1
                             print("Correct tweet!")
              
                 except Exception as e:
@@ -139,20 +147,24 @@ def get_rewards(
         if cnt >= int(self.config.num_spot_check_items_per_response / 2):
             responses[uid]['real_num_rows'] = 0
             responses[uid]['wrong_tweet_exist'] = True
+        responses[uid]['rank_up_to_date'] = i
 
     print(responses)
     # Remove temp indexing
     indexing.remove_temp_indexing()
     return torch.FloatTensor(
-        [response['real_num_rows'] ** 2 for response in responses]
+        [response['real_num_rows'] ** 2 * ((response['rank_up_to_date'] + 1) / (len(valid_uid_list) + 1)) for response in responses]
     ).to(self.device)
 
+
+# this function converts a tweet date string to a timestamp
 def to_timestamp(date_string:str):
     # Define the format of the date string
     date_format = "%a %b %d %H:%M:%S %z %Y"
 
     # Parse the string into a datetime object
     date_object = datetime.strptime(date_string, date_format)
+    # print(f"date_object: {date_object}")
 
     # Convert the datetime object to a timestamp
     timestamp = date_object.timestamp()
