@@ -1,5 +1,5 @@
 import logging
-from scraper import BaseScraper
+from scraping.scraper import BaseScraper
 import pyarrow.csv as pv
 from twscrape import API, Tweet
 import json
@@ -87,7 +87,7 @@ class TwitterScraperV3(BaseScraper):
             with open(file, "w", encoding="utf-8") as f:
                 json.dump(jsons, f, ensure_ascii=False, indent=4)
 
-            logging.info(f"✅ Saved data to {self.save_path + "/" + file}")
+            logging.info(f"✅ Saved data to {self.save_path} / {file}")
         else:        
             file = 'scraped_twitter_data.db'
             
@@ -117,7 +117,7 @@ class TwitterScraperV3(BaseScraper):
                 # Commit the changes
                 self.conn.commit()
 
-                logging.info(f"✅ Saved data to {self.save_path + "/" + file}")
+                logging.info(f"✅ Saved data to {self.save_path} / {file}")
 
                 # # Query the database
                 # c.execute("SELECT * FROM tweets")
@@ -168,7 +168,7 @@ class TwitterQueryBuilder:
 
     def hashtags(self, word=""):
         # cats dogs => (#cats OR #dogs)
-        self.__query.append(f"({self.__multiWords(word, "#")})")
+        self.__query.append(f"({self.__multiWords(word, '#')})")
         return self
 
     def fromAccount(self, word=""):
@@ -188,12 +188,12 @@ class TwitterQueryBuilder:
 
     def fromDate(self, _date=datetime.date):
         # 2024-01-01 => since:2024-02-01
-        self.__query.append(f"since:{_date.strftime("%Y-%m-%d")}")
+        self.__query.append(f"since:{_date.strftime('%Y-%m-%d')}")
         return self
 
     def toDate(self, _date=datetime.date):
         # 2024-01-01 => until:2024-01-01
-        self.__query.append(f"until:{_date.strftime("%Y-%m-%d")}")
+        self.__query.append(f"until:{_date.strftime('%Y-%m-%d')}")
         return self
 
     def build(self):
