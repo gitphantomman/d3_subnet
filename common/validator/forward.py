@@ -54,15 +54,15 @@ async def forward(self):
                 metadata = run_in_subprocess(partial, 30)
 
                 if self.subtensor.block - metadata['block'] > 300:
-                    response = Response(commit=None, dataset=None, num_rows=0, uid=miner['uid'], block = None, real_num_rows = 0, wrong_tweet_exist = False, average_timestamp=0.0, rank_up_to_date = 0)
+                    response = Response(commit=None, dataset=None, num_rows=0, uid=miner['uid'], block = None, real_num_rows = 0, wrong_tweet_cnt = 0, average_timestamp=0.0, rank_up_to_date = 0)
                     responses.append(response)
                 else:
-                    response = Response(commit=latest_commit, dataset=None, num_rows=0, uid=miner['uid'], block = metadata['block'], real_num_rows = 0, wrong_tweet_exist = False, rank_up_to_date=0)
+                    response = Response(commit=latest_commit, dataset=None, num_rows=0, uid=miner['uid'], block = metadata['block'], real_num_rows = 0, wrong_tweet_cnt = 0, rank_up_to_date=0)
                     responses.append(response)
                 
             except Exception as e:
                 bt.logging.debug(f"failed to get metadata from miner {miner['uid']}")
-                response = Response(commit=None, dataset=None, num_rows=0, uid=miner['uid'], block = None, real_num_rows = 0, wrong_tweet_exist = False, average_timestamp=0.0, rank_up_to_date=0)
+                response = Response(commit=None, dataset=None, num_rows=0, uid=miner['uid'], block = None, real_num_rows = 0, wrong_tweet_cnt = 0, average_timestamp=0.0, rank_up_to_date=0)
                 responses.append(response)
                 continue
         rewards = get_rewards(self, responses=responses)
