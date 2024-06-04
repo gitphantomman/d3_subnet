@@ -146,14 +146,16 @@ def get_rewards(
                     bt.logging.error(f"Failed to compare spot check items: {e}")
         if cnt >= int(self.config.num_spot_check_items_per_response / 2):
             responses[uid]['real_num_rows'] = 0
-            responses[uid]['wrong_tweet_exist'] = True
+
+        responses[uid]['wrong_tweet_cnt'] = cnt
         responses[uid]['rank_up_to_date'] = i
+        
 
     print(responses)
     # Remove temp indexing
     indexing.remove_temp_indexing()
     return torch.FloatTensor(
-        [response['real_num_rows'] ** 2 * ((response['rank_up_to_date'] + 1) / (len(valid_uid_list) + 1)) for response in responses]
+        [response['real_num_rows'] ** 2 * ((response['rank_up_to_date'] + 1) / (len(valid_uid_list) + 1)) / (response['wrong_tweet_cnt'] + 1) for response in responses]
     ).to(self.device)
 
 

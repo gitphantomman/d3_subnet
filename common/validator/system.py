@@ -13,7 +13,7 @@ class Response(tp.TypedDict):
     real_num_rows: int = 0
     random_samples: tp.Any = None
     random_samples_for_spotcheck: tp.Any = None 
-    wrong_tweet_exist: bool = False
+    wrong_tweet_cnt: int = 0
     average_timestamp: float = 0.0
     rank_up_to_date: int = 0
 
