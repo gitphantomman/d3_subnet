@@ -7,5 +7,4 @@ python-dotenv
 pandas
 datasets
 asyncio
-pyarrow
 twscrape
