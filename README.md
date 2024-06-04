@@ -37,11 +37,30 @@ To ensure the accuracy of data counts while eliminating duplicates, validators r
 
 ## Our Roadmap
 
-- Decentralization: Finding solutions to fully decentralize the centralized services currently used for scraping.
-- Fair Incentive Evaluation: Addressing the issue of fair incentive evaluation for miners post-launch.
-- Expanded Datasets: Enhancing our dataset to include not only text and images from Twitter but also video and audio datasets.
-- Collaboration for Training Datasets: Partnering with other AI model training subnets to produce the training datasets required for Bittensor.
-- Website Launch: Launching a website to showcase the usefulness of our data and its applications, highlighting the appeal of Bittensor to a broader audience beyond our platform.
+- Collaboration for Training Datasets
+    Partnering with other AI model training subnets to produce the training datasets required for Bittensor.
+    
+    We have established contacts with SN14, SN15, SN9, and several other subnets, and we will produce datasets for these subnets sequentially.
+
+- Fair Incentive Evaluation
+
+    Addressing the issue of fair incentive evaluation for miners post-launch.
+
+    After launch, we plan to design the reward distribution curve exponentially, ensuring that the top miner receives almost of the reward. This approach will foster competition and ensure that subnets achieve the highest quality and speed.
+
+
+- Expanded Datasets
+    Enhancing our dataset to include not only text and images from Twitter but also video and audio datasets.
+    
+    Additionally, we plan to expand our scraping sources beyond Twitter to include other social media platforms.
+
+- Decentralization
+
+    Finding solutions to fully decentralize the centralized services currently used for scraping.
+
+    We have already integrated a non-Apify scraper and are committed to finding solutions for decentralized scrapers across different subnets. This will help us achieve full decentralization for the D3 Subnet and Bittensor.
+- Website Launch
+    Launching a website to showcase the usefulness of our data and its applications, highlighting the appeal of Bittensor to a broader audience beyond our platform.
 
 ## Getting Started
 
@@ -70,7 +89,7 @@ python3 -m pip install -r requirements.txt
 
 - Please reference [Register guide](https://docs.bittensor.com/subnets/register-validate-mine).
 - Check if you're registered to subnet using `btcli w overview --subtensor.network finney --wallet.name miner`.
-- You can check the metagraph using `btcli subnets metagraph --subtensor.network finney --netuid 10`.
+- You can check the metagraph using `btcli subnets metagraph --subtensor.network finney --netuid 6`.
 
 See [Miner Setup](docs/miner.md) to learn how to set up a Miner.
 
