@@ -38,6 +38,7 @@ To ensure the accuracy of data counts while eliminating duplicates, validators r
 ## Our Roadmap
 
 - Collaboration for Training Datasets
+
     Partnering with other AI model training subnets to produce the training datasets required for Bittensor.
     
     We have established contacts with SN14, SN15, SN9, and several other subnets, and we will produce datasets for these subnets sequentially.
@@ -50,6 +51,7 @@ To ensure the accuracy of data counts while eliminating duplicates, validators r
 
 
 - Expanded Datasets
+
     Enhancing our dataset to include not only text and images from Twitter but also video and audio datasets.
     
     Additionally, we plan to expand our scraping sources beyond Twitter to include other social media platforms.
@@ -60,6 +62,7 @@ To ensure the accuracy of data counts while eliminating duplicates, validators r
 
     We have already integrated a non-Apify scraper and are committed to finding solutions for decentralized scrapers across different subnets. This will help us achieve full decentralization for the D3 Subnet and Bittensor.
 - Website Launch
+
     Launching a website to showcase the usefulness of our data and its applications, highlighting the appeal of Bittensor to a broader audience beyond our platform.
 
 ## Getting Started
