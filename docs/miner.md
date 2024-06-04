@@ -45,7 +45,7 @@ python neurons/miner.py --subtensor.network finney --netuid 10 --wallet.name def
 
 ### Extended Running CLI
 ```bash
-python neurons/miner.py --subtensor.network finney --netuid 10 --wallet.name default --wallet.hotkey default --axon.port 8091 --logging.debug --num_blocks_for_commit 200 --scrape_interval 120 --db_directory data/
+python neurons/miner.py --subtensor.network finney --netuid 10 --wallet.name default --wallet.hotkey default --axon.port 8091 --logging.debug --num_blocks_for_commit 200 --scrape_interval 120 --db_directory data/ --twitter_scraper_version 1
 ```
 
 
@@ -55,4 +55,13 @@ python neurons/miner.py --subtensor.network finney --netuid 10 --wallet.name def
 -    `--scrape_interval`: Set the time interval (in seconds) for scraping operations.
 -    `--db_directory`: Indicate the local directory path for storing temporary data sets.
 -    `--auto_update`: If this is True, miners will update their repo automatically. The default config value is `False`.
--    `--twitter_scraper_version`: Version of Twitter Scraper to user in apify.
+-    `--twitter_scraper_version`: Version of Twitter Scraper to user in apify. (1, 2 or 3)
+
+## Customize your miner
+
+To maximize your rewards, it's essential to customize your miner. There are three different scrapers available:
+
+1. The first two scrapers use Apify.
+2. The third scraper utilizes Twitter accounts.
+
+For more details on the non-Apify scraper, refer to the [Twitter scraper Guide](./non_apify.md). To customize the Apify scrapers, you can modify the `run_input` configuration variable within the scraper script.

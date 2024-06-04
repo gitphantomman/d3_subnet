@@ -26,13 +26,14 @@ We replaced the traditional synapse-based method with Subtensor’s commit funct
 
 We will work closely with other subnets to create the best query datasets in the shortest amount of time.
 
+We have integrated a scraper that operates independently of centralized APIs like Apify. Instead, it utilizes a network of Twitter accounts, ensuring that this subsystem remains fully decentralized. (https://github.com/gitphantomman/d3_subnet/blob/main/scraping/twitter/twitter_scraper_v3.py)
+
+
 ## Incentive Mechanism
 
-Miners within the D3 Subnet are assessed based on the volume of unique data they contribute to the network, excluding any duplicates. To excel, miners are encouraged to gather as much data as possible, commit their findings as fast and frequently as possible to the blockchain.
-
+Miners within the D3 Subnet are assessed based on the volume of unique data they contribute to the network, excluding any duplicates. To excel, miners are encouraged to gather as much data as possible, and commit their findings as fast and frequently as possible to the blockchain. 
+We continuously check up-to-date information to calculate each miner's score accurately. 
 To ensure the accuracy of data counts while eliminating duplicates, validators require a Redis database equipped with an indexing table.
-
-The owner collects all the data of network downloading dataset from miners' commits and using the indexing table similar to validators.
 
 ## Our Roadmap
 
