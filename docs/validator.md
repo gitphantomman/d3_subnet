@@ -60,13 +60,13 @@ To get more details, please visit the [Redis documentation](https://redis.io/doc
 ### Running the validator script
 
 ```bash
-python neurons/validator.py --subtensor.network local --netuid 10 --wallet.name default --wallet.hotkey default --axon.port 8092 --logging.debug
+python neurons/validator.py --subtensor.network local --netuid 6 --wallet.name default --wallet.hotkey default --axon.port 8092 --logging.debug
 ```
 
 ### Extened Running CLI
 
 ```bash
-python neurons/validator.py --subtensor.network local --netuid 10 --wallet.name default --wallet.hotkey default --axon.port 8092 --logging.debug --num_blocks_for_validation 250 --num_spot_check_items_per_response 20
+python neurons/validator.py --subtensor.network local --netuid 6 --wallet.name default --wallet.hotkey default --axon.port 8092 --logging.debug --num_blocks_for_validation 250 --num_spot_check_items_per_response 20
 ```
 
 -    `--wallet.name`: Specify the name of the cold key holding the hotkey linked to your miner.
